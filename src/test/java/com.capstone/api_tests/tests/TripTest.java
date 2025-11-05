@@ -2,7 +2,6 @@ package com.capstone.api_tests.tests;
 
 import com.capstone.api_tests.base.BaseTest;
 import com.capstone.api_tests.endpoints.TripEndpoints;
-import com.capstone.api_tests.testdata.AuthTestData;
 import com.capstone.api_tests.triphelpers.TripHelper;
 import com.capstone.api_tests.triphelpers.TestInfoHolder;
 import com.capstone.api_tests.testdata.TripTestData;
@@ -20,7 +19,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Management APIs")
-public class TripTests extends BaseTest {
+public class TripTest extends BaseTest {
 
     TripEndpoints trip = new TripEndpoints();
     String token = TokenManager.getToken();

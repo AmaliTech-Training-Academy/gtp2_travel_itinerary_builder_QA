@@ -10,6 +10,7 @@ public class TokenManager {
 
     private static String token;          // Primary test user token
     private static String secondaryToken; // Second test user token
+    private static String secondaryEmail = "richmondnyarko123@gmail.com";
 
     public static String getToken() {
         if (token == null) {
@@ -22,9 +23,13 @@ public class TokenManager {
 
     public static String getAnotherUserToken() {
         if (secondaryToken == null) {
-            secondaryToken = getTokenFor("richmondnyarko123@gmail.com", "StrongPassword1");
+            secondaryToken = getTokenFor(secondaryEmail, "StrongPassword1");
         }
         return secondaryToken;
+    }
+
+    public static String getAnotherUserEmail() {
+        return secondaryEmail; // return the valid email
     }
 
     private static String getTokenFor(String email, String password) {

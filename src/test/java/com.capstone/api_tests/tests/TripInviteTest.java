@@ -12,17 +12,17 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Invite API")
-public class TripInviteTests extends BaseTest {
+public class TripInviteTest extends BaseTest {
 
     TripEndpoints trip = new TripEndpoints();
     String ownerToken = TokenManager.getToken();
     String tripId;
-    String inviteCode;
+    String inviteCode, userEmail;
 
     @BeforeEach
     void setup() {
         // Create trip as owner
-        tripId = TripHelper.createTestTrip(ownerToken, "Berlin");
+        tripId = TripHelper.createTestTrip(ownerToken, "Accra");
 
         // Generate invite link
         Response resp = trip.getInviteLink(ownerToken, tripId);
@@ -48,7 +48,7 @@ public class TripInviteTests extends BaseTest {
                 .statusCode(200)
                 .body("success", is(true))
                 .body("data.tripId", equalTo(tripId))
-                .body("data.status", is("PENDING"));
+                .body("data.destination", equalTo("Accra"));
     }
 
     @Test
@@ -56,8 +56,9 @@ public class TripInviteTests extends BaseTest {
     @Severity(SeverityLevel.CRITICAL)
     public void testAcceptInvite() {
         String userToken = TokenManager.getAnotherUserToken(); // second user
+        String userEmail = TokenManager.getAnotherUserEmail();
 
-        trip.acceptInvite(inviteCode, userToken)
+        trip.acceptInvite(inviteCode, userToken, userEmail)
                 .then()
                 .statusCode(200)
                 .body("success", is(true))
@@ -69,8 +70,9 @@ public class TripInviteTests extends BaseTest {
     @Severity(SeverityLevel.NORMAL)
     public void testRejectInvite() {
         String userToken = TokenManager.getAnotherUserToken();
+        String userEmail = TokenManager.getAnotherUserEmail();
 
-        trip.rejectInvite(inviteCode, userToken)
+        trip.rejectInvite(inviteCode, userToken, userEmail)
                 .then()
                 .statusCode(200)
                 .body("success", is(true))

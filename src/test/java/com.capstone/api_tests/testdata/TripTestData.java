@@ -8,6 +8,8 @@ public class TripTestData {
     public static final String VALID_EMAIL = "testmate@example.com";
     public static final String NON_EXIST_EMAIL = "nobody@example.com";
     public static final String INVALID_TRIP_ID ="1234-invalid";
+    public static final String SAMPLE_TRIP_ID = "4ee8ee0b-f098-4821-953a-c23c12d9d238";
+    public static final String SAMPLE_TRIP_INVITE_ID = "c8be0d12-b4e0-46e6-ad96-37e9d5836065";
 
     public static Map<String, Object> validTripData(String destination) {
         Map<String, Object> data = new HashMap<>();

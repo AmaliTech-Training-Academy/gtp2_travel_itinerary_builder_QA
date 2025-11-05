@@ -1,6 +1,7 @@
 package com.capstone.api_tests.endpoints;
 
 import com.capstone.api_tests.base.BaseTest;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Map;
 
@@ -99,19 +100,27 @@ public class TripEndpoints {
                 .get("/trips/invite?token=" + code);
     }
 
-    public Response acceptInvite(String code, String token) {
+    public Response acceptInvite(String inviteCode, String token, String email) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(requestSpec)
                 .header("Authorization", "Bearer " + token)
-                .post("/trips/invite/accept?token=" + code);
+                .contentType(ContentType.JSON)
+                .body("{\"email\":\"" + email + "\"}")
+                .when()
+                .post("/trips/invite/" + inviteCode + "/accept");
     }
 
-    public Response rejectInvite(String code, String token) {
+    public Response rejectInvite(String inviteCode, String token, String email) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(requestSpec)
                 .header("Authorization", "Bearer " + token)
-                .post("/trips/invite/reject?token=" + code);
+                .contentType(ContentType.JSON)
+                .body("{\"email\":\"" + email + "\"}")
+                .when()
+                .post("/trips/invite/" + inviteCode + "/reject");
     }
+
+
 
 
 

@@ -6,7 +6,6 @@ import com.capstone.api_tests.testdata.AuthTestData;
 import com.capstone.api_tests.utils.TokenManager;
 import io.qameta.allure.*;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,7 +14,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Authentication APIs")
-public class AuthTests extends BaseTest {
+public class AuthTest extends BaseTest {
 
     AuthEndpoints auth = new AuthEndpoints();
 
