@@ -12,8 +12,8 @@ target/
 *.iml
 *.ipr
 allure-results
-docker-compose.yml
-Dockerfile
+#docker-compose.yml
+#Dockerfile
 
 ### Eclipse ###
 .apt_generated

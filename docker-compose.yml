@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  selenium:
+    image: selenium/standalone-chrome:latest
+    shm_size: "2g"
+    ports:
+      - "4444:4444"
+
+  zap:
+    image: owasp/zap2docker-stable
+    command: zap.sh -daemon -port 8080 -host 0.0.0.0
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./zap:/zap
+
+  tests:
+    build: .
+    working_dir: /app
+    depends_on:
+      - selenium
+      - zap
+    environment:
+      SELENIDE_REMOTE_URL: http://selenium:4444/wd/hub
+      ZAP_HOST: zap
+      ZAP_PORT: 8080
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./target:/app/target
+      - ./jmeter:/app/jmeter
+    command: >
+      /bin/bash -c "
+        echo 'Running UI Tests...';
+        mvn clean test -Dgroups=ui -Dselenide.remote=http://selenium:4444/wd/hub;
+        echo 'Running API Tests...';
+        mvn test -Dgroups=api
+      "
