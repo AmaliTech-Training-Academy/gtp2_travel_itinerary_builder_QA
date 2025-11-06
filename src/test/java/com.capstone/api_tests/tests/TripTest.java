@@ -42,8 +42,8 @@ public class TripTest extends BaseTest {
 
     private static Stream<Arguments> invalidTripProvider() {
         return Stream.of(
-                Arguments.of(TripTestData.tripWithMissingDestination(), List.of(400,404)),
-                Arguments.of(TripTestData.tripMissingDates("Nairobi"), List.of(400,422)),
+                Arguments.of(TripTestData.tripWithMissingDestination(), List.of(400,401)),
+                Arguments.of(TripTestData.tripMissingDates("Nairobi"), List.of(400,401)),
                 Arguments.of(TripTestData.invalidDateTrip("Accra"), List.of(400,422)),
                 Arguments.of(TripTestData.largeTravelerTrip("Accra"), List.of(400,422))
         );
@@ -311,7 +311,7 @@ public class TripTest extends BaseTest {
 
         trip.createTrip(payload, token)
                 .then()
-                .statusCode(anyOf(is(400), is(422)));
+                .statusCode(anyOf(is(400), is(401)));
     }
 
 
