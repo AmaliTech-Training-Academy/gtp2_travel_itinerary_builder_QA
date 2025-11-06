@@ -254,7 +254,7 @@ jobs:
   deploy-reports:
     name: 🚀 Deploy Reports to GitHub Pages
     runs-on: ubuntu-latest
-    needs: aggregate-reports
+#    needs: aggregate-reports
     if: always()
 
     steps:
