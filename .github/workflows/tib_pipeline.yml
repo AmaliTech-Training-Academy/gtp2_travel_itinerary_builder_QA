@@ -85,7 +85,7 @@ jobs:
           mkdir -p jmeter-results
           docker run --rm -v ${{ github.workspace }}:/jmeter \
             justb4/jmeter \
-            -n -t /performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
+            -n -t performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
             -l /jmeter/jmeter-results/results.jtl \
 #            -e -o /jmeter/jmeter-results/html-report
 

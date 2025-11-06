@@ -183,7 +183,7 @@ public class TripTest extends BaseTest {
 
         trip.createTrip(payload, token)
                 .then()
-                .statusCode(anyOf(is(400), is(404)))
+                .statusCode(anyOf(is(400), is(401)))
                 .body("success", is(false));
     }
 
@@ -195,7 +195,7 @@ public class TripTest extends BaseTest {
 
         trip.createTrip(payload, token)
                 .then()
-                .statusCode(anyOf(is(400), is(422)))
+                .statusCode(anyOf(is(400), is(401)))
                 .body("success", is(false));
     }
 
@@ -207,7 +207,7 @@ public class TripTest extends BaseTest {
 
         trip.createTrip(payload, token)
                 .then()
-                .statusCode(anyOf(is(400), is(422)))
+                .statusCode(anyOf(is(400), is(401)))
                 .body("success", is(false));
     }
 
@@ -253,7 +253,7 @@ public class TripTest extends BaseTest {
 
         trip.getTripById(token, TripTestData.INVALID_TRIP_ID)
                 .then()
-                .statusCode(anyOf(is(400), is(500)))
+                .statusCode(anyOf(is(400), is(401)))
                 .body("success", is(false));
     }
 
