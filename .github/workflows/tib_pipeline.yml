@@ -70,31 +70,31 @@ jobs:
   # ------------------------
   # 3. BACKEND PERFORMANCE (JMeter)
   # ------------------------
-#  backend-performance:
-#    name: ⚡ Backend Performance (JMeter)
-#    runs-on: ubuntu-latest
-#    needs: api-tests
-#    if: always()
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Run JMeter API test plan
-#        run: |
-#          mkdir -p jmeter-results
-#          docker run --rm -v ${{ github.workspace }}:/jmeter \
-#            justb4/jmeter \
-#            -n -t /jmeter/performance/API_Backend_Performance_Test_Plan.jmx \
-#            -l /jmeter/jmeter-results/results.jtl \
-#            -e -o /jmeter/jmeter-results/html-report
-#
-#      - name: Upload JMeter results
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: jmeter-results
-#          path: jmeter-results
-#
+  backend-performance:
+    name: ⚡ Backend Performance (JMeter)
+    runs-on: ubuntu-latest
+    needs: api-tests
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run JMeter API test plan
+        run: |
+          mkdir -p jmeter-results
+          docker run --rm -v ${{ github.workspace }}:/jmeter \
+            justb4/jmeter \
+            -n -t /jmeter/performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx \
+            -l /jmeter/jmeter-results/results.jtl \
+            -e -o /jmeter/jmeter-results/html-report
+
+      - name: Upload JMeter results
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results
+          path: jmeter-results
+
 #  # ------------------------
 #  # 4. FRONTEND PERFORMANCE (Optional Lighthouse)
 #  # ------------------------
@@ -249,25 +249,25 @@ jobs:
 #          "
 #
 #  # ------------------------
-#  # 8. DEPLOY REPORTS
-#  # ------------------------
-#  deploy-reports:
-#    name: 🚀 Deploy Reports to GitHub Pages
-#    runs-on: ubuntu-latest
-#    needs: aggregate-reports
-#    if: always()
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Deploy all reports
-#        uses: peaceiris/actions-gh-pages@v4
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: reports
-#          publish_branch: gh-pages
-#          force_orphan: true
+  # 8. DEPLOY REPORTS
+  # ------------------------
+  deploy-reports:
+    name: 🚀 Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: aggregate-reports
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy all reports
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports
+          publish_branch: gh-pages
+          force_orphan: true
 #
 #  # ------------------------
 #  # 9. SLACK NOTIFICATION
