@@ -58,7 +58,7 @@ jobs:
         run: docker build -t travel_api_tests .
 
       - name: Run API tests
-        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test -Dgroups=api
+        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
 
       - name: Upload API Allure results
         if: always()
