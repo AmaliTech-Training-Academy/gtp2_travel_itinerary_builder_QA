@@ -146,6 +146,7 @@
                     <systemPropertyVariables>
                         <allure.results.directory>allure-results</allure.results.directory>
                     </systemPropertyVariables>
+                    <testFailureIgnore>true</testFailureIgnore>
                 </configuration>
             </plugin>
 

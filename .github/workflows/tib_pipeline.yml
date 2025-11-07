@@ -87,8 +87,7 @@ jobs:
             justb4/jmeter \
             -n -t /jmeter/performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
             -l /jmeter/jmeter-results/results.jtl \
-#            -e -o /jmeter/jmeter-results/html-report
-
+            -e -o /jmeter/jmeter-results/html-report
       - name: Upload JMeter results
         uses: actions/upload-artifact@v4
         with:
