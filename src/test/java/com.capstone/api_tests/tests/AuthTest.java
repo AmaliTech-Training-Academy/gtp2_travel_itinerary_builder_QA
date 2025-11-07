@@ -68,8 +68,8 @@ public class AuthTest extends BaseTest {
     @Story("TC005 - Logout the current user")
     @Severity(SeverityLevel.NORMAL)
     public void testLogoutSuccessfully() {
-        String token = TokenManager.getToken();
-        Response response = auth.logout(token);
+        String freshToken = TokenManager.getToken();
+        Response response = auth.logout(freshToken);
 
         response.then()
                 .statusCode(200)

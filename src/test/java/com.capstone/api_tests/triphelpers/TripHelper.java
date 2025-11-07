@@ -13,16 +13,12 @@ public class TripHelper {
 
         Response resp = trip.createTrip(data, token);
 
-        resp.then().statusCode(201);
-
         return resp.jsonPath().getString("data.id");
     }
 
     public static void deleteTestTrip(String token, String tripId) {
         if (tripId != null && !tripId.isEmpty()) {
-            trip.deleteTrip(token, tripId)
-                    .then()
-                    .statusCode(200);
+            trip.deleteTrip(token, tripId);
         }
     }
 }

@@ -13,18 +13,16 @@ public class TokenManager {
     private static String secondaryEmail = "richmondnyarko123@gmail.com";
 
     public static String getToken() {
-        if (token == null) {
             Map<String, Object> loginData = AuthTestData.validLoginData();
             Response response = new AuthEndpoints().login(loginData);
             token = response.jsonPath().getString("data.accessToken");
-        }
+
         return token;
     }
 
-    public static String getAnotherUserToken() {
-        if (secondaryToken == null) {
-            secondaryToken = getTokenFor(secondaryEmail, "StrongPassword1");
-        }
+    public static synchronized String getAnotherUserToken() {
+        secondaryToken = getTokenFor(secondaryEmail, "StrongPassword1");
+
         return secondaryToken;
     }
 

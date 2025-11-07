@@ -11,6 +11,7 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.lessThan;
@@ -19,7 +20,7 @@ public class BaseTest {
 
     public static RequestSpecification requestSpec;
     protected static ResponseSpecification responseSpec;
-    protected static String token;
+    protected String token;
 
     @BeforeAll
     public static void setUp() {
@@ -37,8 +38,10 @@ public class BaseTest {
                 .expectHeader("Content-Type", containsString("application/json"))
                 .expectResponseTime(lessThan(5000L))
                 .build();
+    }
 
-        token = TokenManager.getToken();
-
+    @BeforeEach
+    public void initToken() {
+        token = TokenManager.getToken(); // fresh token per test
     }
 }

@@ -11,6 +11,11 @@ public class TripTestData {
     public static final String SAMPLE_TRIP_ID = "4ee8ee0b-f098-4821-953a-c23c12d9d238";
     public static final String SAMPLE_TRIP_INVITE_ID = "c8be0d12-b4e0-46e6-ad96-37e9d5836065";
 
+    public static String uniqueEmail() {
+        return "testuser_" + System.currentTimeMillis() + "@example.com";
+    }
+
+
     public static Map<String, Object> validTripData(String destination) {
         Map<String, Object> data = new HashMap<>();
         data.put("title", "QA Trip " + System.currentTimeMillis());
