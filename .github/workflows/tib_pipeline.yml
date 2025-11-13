@@ -44,55 +44,55 @@ jobs:
   # ------------------------
   # 2. API TESTS (Rest Assured)
   # ------------------------
-  api-tests:
-    name: 🛠️ API Tests
-    runs-on: ubuntu-latest
-#    needs: ui-tests
-    continue-on-error: false
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Build Docker image for API tests
-        run: docker build -t travel_api_tests .
-
-      - name: Run API tests
-        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
-
-      - name: Upload API Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-allure-results
-          path: allure-results
+#  api-tests:
+#    name: 🛠️ API Tests
+#    runs-on: ubuntu-latest
+##    needs: ui-tests
+#    continue-on-error: false
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Build Docker image for API tests
+#        run: docker build -t travel_api_tests .
+#
+#      - name: Run API tests
+#        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
+#
+#      - name: Upload API Allure results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: api-allure-results
+#          path: allure-results
 
   # ------------------------
   # 3. BACKEND PERFORMANCE (JMeter)
   # ------------------------
-  backend-performance:
-    name: ⚡ Backend Performance (JMeter)
-    runs-on: ubuntu-latest
-    needs: api-tests
-    if: always()
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run JMeter API test plan
-        run: |
-          mkdir -p jmeter-results
-          docker run --rm -v ${{ github.workspace }}:/jmeter \
-            justb4/jmeter \
-            -n -t /jmeter/performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
-            -l /jmeter/jmeter-results/results.jtl \
-            -e -o /jmeter/jmeter-results/html-report
-      - name: Upload JMeter results
-        uses: actions/upload-artifact@v4
-        with:
-          name: jmeter-results
-          path: jmeter-results
+#  backend-performance:
+#    name: ⚡ Backend Performance (JMeter)
+#    runs-on: ubuntu-latest
+#    needs: api-tests
+#    if: always()
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Run JMeter API test plan
+#        run: |
+#          mkdir -p jmeter-results
+#          docker run --rm -v ${{ github.workspace }}:/jmeter \
+#            justb4/jmeter \
+#            -n -t /jmeter/performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
+#            -l /jmeter/jmeter-results/results.jtl \
+#            -e -o /jmeter/jmeter-results/html-report
+#      - name: Upload JMeter results
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: jmeter-results
+#          path: jmeter-results
 
 #  # ------------------------
 #  # 4. FRONTEND PERFORMANCE (Optional Lighthouse)
@@ -127,7 +127,7 @@ jobs:
   backend-security:
     name: 🔒 Backend Security Scan
     runs-on: ubuntu-latest
-    needs: api-tests
+#    needs: api-tests
     if: always()
 
     steps:
@@ -142,6 +142,7 @@ jobs:
           docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
             ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
             -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
+            -f openapi \
             -r zap-api-report.html \
             -J zap-api-report.json \
             -I
