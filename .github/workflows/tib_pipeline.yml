@@ -136,6 +136,7 @@ jobs:
 
       - name: Prepare security report folder
         run: mkdir -p security_report/backend
+             chmod 777 security_report/backend
 
       - name: Run ZAP Baseline Scan against API
         run: |
