@@ -124,10 +124,46 @@ jobs:
 #  # ------------------------
 #  # 5. BACKEND SECURITY (OWASP ZAP)
 #  # ------------------------
-  backend-security:
-    name: 🔒 Backend Security Scan
+#  backend-security:
+#    name: 🔒 Backend Security Scan
+#    runs-on: ubuntu-latest
+##    needs: api-tests
+#    if: always()
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#
+#      - name: Prepare security report folder
+#        run: |
+#          mkdir -p security_report/backend
+#          chmod 777 security_report/backend
+#          sudo chown -R $(id -u):$(id -g) security_report/backend
+#
+#      - name: Run ZAP Baseline Scan against API
+#        run: |
+#          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
+#            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+#            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
+#            -f openapi \
+#            -r zap-api-report.html \
+#            -J zap-api-report.json \
+#            -I
+#
+#      - name: Upload ZAP API Report
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: tib-api-report
+#          path: security_report/backend/
+
+#  # ------------------------
+#  # 6. FRONTEND SECURITY (OWASP ZAP)
+#  # ------------------------
+  frontend-security:
+    name: 🔒 Frontend Security Scan
     runs-on: ubuntu-latest
-#    needs: api-tests
+#    needs: ui-tests
     if: always()
 
     steps:
@@ -136,56 +172,25 @@ jobs:
 
       - name: Prepare security report folder
         run: |
-          mkdir -p security_report/backend
-          chmod 777 security_report/backend
-          sudo chown -R $(id -u):$(id -g) security_report/backend
+          mkdir -p security/frontend-security
+          chmod 777 security_report/frontend
+          sudo chown -R $(id -u):$(id -g) security_report/frontend
 
-      - name: Run ZAP Baseline Scan against API
+      - name: Run ZAP Baseline Scan against frontend
         run: |
-          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
-            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
-            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
-            -f openapi \
-            -r zap-api-report.html \
-            -J zap-api-report.json \
+          docker run --rm -v ${{ github.workspace }}/security/frontend-security:/zap/wrk:rw \
+            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+            -t https://d3uvhar7i2kujw.cloudfront.net/ \
+            -r zap-frontend-report.html \
+            -J zap-frontend-report.json
             -I
 
-      - name: Upload ZAP API Report
+      - name: Upload ZAP Frontend Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tib-api-report
-          path: security_report/backend/
-
-#  # ------------------------
-#  # 6. FRONTEND SECURITY (OWASP ZAP)
-#  # ------------------------
-#  frontend-security:
-#    name: 🔒 Frontend Security Scan
-#    runs-on: ubuntu-latest
-#    needs: ui-tests
-#    if: always()
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Prepare security report folder
-#        run: mkdir -p security/frontend-security
-#
-#      - name: Run ZAP Baseline Scan against frontend
-#        run: |
-#          docker run --rm -v ${{ github.workspace }}/security/frontend-security:/zap/wrk:rw \
-#            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#            -t https://your-frontend-staging-url.com \
-#            -r zap-frontend-report.html \
-#            -J zap-frontend-report.json
-#
-#      - name: Upload ZAP Frontend Report
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: frontend-security-report
-#          path: security/frontend-security
+          name: frontend-security-report
+          path: security/frontend-security
 #
 #  # ------------------------
 #  # 7. AGGREGATE ALL REPORTS
