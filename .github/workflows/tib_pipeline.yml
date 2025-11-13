@@ -124,38 +124,38 @@ jobs:
 #  # ------------------------
 #  # 5. BACKEND SECURITY (OWASP ZAP)
 #  # ------------------------
-#  backend-security:
-#    name: 🔒 Backend Security Scan
-#    runs-on: ubuntu-latest
-##    needs: api-tests
-#    if: always()
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Prepare security report folder
-#        run: |
-#          mkdir -p security_report/backend
-#          chmod 777 security_report/backend
-#          sudo chown -R $(id -u):$(id -g) security_report/backend
-#
-#      - name: Run ZAP Baseline Scan against API
-#        run: |
-#          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
-#            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
-#            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
-#            -f openapi \
-#            -r zap-api-report.html \
-#            -J zap-api-report.json \
-#            -I
-#
-#      - name: Upload ZAP API Report
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: tib-api-report
-#          path: security_report/backend/
+  backend-security:
+    name: 🔒 Backend Security Scan
+    runs-on: ubuntu-latest
+#    needs: api-tests
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare security report folder
+        run: |
+          mkdir -p security_report/backend
+          chmod 777 security_report/backend
+          sudo chown -R $(id -u):$(id -g) security_report/backend
+
+      - name: Run ZAP Baseline Scan against API
+        run: |
+          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
+            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
+            -f openapi \
+            -r zap-api-report.html \
+            -J zap-api-report.json \
+            -I
+
+      - name: Upload ZAP API Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tib-api-report
+          path: security_report/backend/
 
 #  # ------------------------
 #  # 6. FRONTEND SECURITY (OWASP ZAP)
@@ -195,18 +195,19 @@ jobs:
 #  # ------------------------
 #  # 7. AGGREGATE ALL REPORTS
 #  # ------------------------
-#  aggregate-reports:
-#    name: 📊 Aggregate All Reports
-#    runs-on: ubuntu-latest
+  aggregate-reports:
+    name: 📊 Aggregate All Reports
+    runs-on: ubuntu-latest
 #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security]
-#    if: always()
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Download All Artifacts
-#        uses: actions/download-artifact@v4
+    needs: [backend-security, frontend-security]
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
 #        with:
 #          name: allure-results
 #          path: reports/allure
@@ -227,21 +228,21 @@ jobs:
 #          name: frontend-performance
 #          path: reports/frontend-performance
 #      - uses: actions/download-artifact@v4
-#        with:
-#          name: backend-security-report
-#          path: reports/backend-security
-#      - uses: actions/download-artifact@v4
-#        with:
-#          name: frontend-security-report
-#          path: reports/frontend-security
-#
-#      - name: Generate Allure HTML report
-#        run: |
-#          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
-#          tar -xzf allure-2.27.0.tgz
-#          sudo mv allure-2.27.0 /opt/allure
-#          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
-#          allure generate reports/allure --clean -o reports/allure-report
+        with:
+          name: backend-security-report
+          path: reports/backend-security
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-security-report
+          path: reports/frontend-security
+
+      - name: Generate Allure HTML report
+        run: |
+          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          tar -xzf allure-2.27.0.tgz
+          sudo mv allure-2.27.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
+          allure generate reports/allure --clean -o reports/allure-report
 #
 #      - name: Generate Cucumber HTML report
 #        run: |
@@ -261,24 +262,24 @@ jobs:
 #  # ------------------------
   # 8. DEPLOY REPORTS
   # ------------------------
-#  deploy-reports:
-#    name: 🚀 Deploy Reports to GitHub Pages
-#    runs-on: ubuntu-latest
-##    needs: aggregate-reports
-#    if: always()
-#
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#
-#      - name: Deploy all reports
-#        uses: peaceiris/actions-gh-pages@v4
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          publish_dir: reports
-#          publish_branch: gh-pages
-#          force_orphan: true
-#
+  deploy-reports:
+    name: 🚀 Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: aggregate-reports
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy all reports
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports
+          publish_branch: gh-pages
+          force_orphan: true
+
 #  # ------------------------
 #  # 9. SLACK NOTIFICATION
 #  # ------------------------
