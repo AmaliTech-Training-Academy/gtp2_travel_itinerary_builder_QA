@@ -44,28 +44,28 @@ jobs:
   # ------------------------
   # 2. API TESTS (Rest Assured)
   # ------------------------
-#  api-tests:
-#    name: 🛠️ API Tests
-#    runs-on: ubuntu-latest
-##    needs: ui-tests
-#    continue-on-error: false
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Build Docker image for API tests
-#        run: docker build -t travel_api_tests .
-#
-#      - name: Run API tests
-#        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
-#
-#      - name: Upload API Allure results
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: api-allure-results
-#          path: allure-results
+  api-tests:
+    name: 🛠️ API Tests
+    runs-on: ubuntu-latest
+#    needs: ui-tests
+    continue-on-error: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image for API tests
+        run: docker build -t travel_api_tests .
+
+      - name: Run API tests
+        run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
+
+      - name: Upload API Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-results
+          path: allure-results
 
   # ------------------------
   # 3. BACKEND PERFORMANCE (JMeter)
