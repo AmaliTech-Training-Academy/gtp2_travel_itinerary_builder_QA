@@ -182,7 +182,7 @@ jobs:
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
             -t https://d3uvhar7i2kujw.cloudfront.net/ \
             -r zap-frontend-report.html \
-            -J zap-frontend-report.json
+            -J zap-frontend-report.json \
             -I
 
       - name: Upload ZAP Frontend Report
