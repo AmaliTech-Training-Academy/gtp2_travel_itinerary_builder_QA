@@ -172,13 +172,13 @@ jobs:
 
       - name: Prepare security report folder
         run: |
-          mkdir -p security/frontend-security
+          mkdir -p security_report/frontend
           chmod 777 security_report/frontend
           sudo chown -R $(id -u):$(id -g) security_report/frontend
 
       - name: Run ZAP Baseline Scan against frontend
         run: |
-          docker run --rm -v ${{ github.workspace }}/security/frontend-security:/zap/wrk:rw \
+          docker run --rm -v ${{ github.workspace }}/security_report/frontend:/zap/wrk:rw \
             ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
             -t https://d3uvhar7i2kujw.cloudfront.net/ \
             -r zap-frontend-report.html \
@@ -190,7 +190,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-security-report
-          path: security/frontend-security
+          path: security_report/frontend/
 #
 #  # ------------------------
 #  # 7. AGGREGATE ALL REPORTS
