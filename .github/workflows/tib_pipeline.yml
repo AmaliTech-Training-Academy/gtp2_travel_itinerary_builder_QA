@@ -135,8 +135,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare security report folder
-        run: mkdir -p security_report/backend
-             chmod 777 security_report/backend
+        run: |
+          mkdir -p security_report/backend
+          chmod 777 security_report/backend
+          sudo chown -R $(id -u):$(id -g) security_report/backend
 
       - name: Run ZAP Baseline Scan against API
         run: |
