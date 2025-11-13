@@ -272,6 +272,369 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Create reports directory structure
+      - name: Create reports directory
+        run: |
+#          mkdir -p reports/ui-allure-report
+#          mkdir -p reports/ui-cucumber-report
+#          mkdir -p reports/api-allure-report
+#          mkdir -p reports/jmeter-report
+          mkdir -p reports/frontend-security
+          mkdir -p reports/backend-security
+
+      # ---------- UI ALLURE REPORT ----------
+#      - name: Download UI Allure results
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ui-allure-results
+#          path: ui-allure-results
+#        continue-on-error: true
+#
+#      - name: Install Allure CLI
+#        run: |
+#          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+#          tar -xzf allure-2.27.0.tgz
+#          sudo mv allure-2.27.0 /opt/allure
+#          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
+#
+#      - name: Generate UI Allure report
+#        run: |
+#          if [ -d "ui-allure-results" ] && [ "$(ls -A ui-allure-results)" ]; then
+#            allure generate ui-allure-results --clean -o reports/ui-allure-report
+#          else
+#            echo "No UI Allure results found"
+#          fi
+#        continue-on-error: true
+#
+#      # ---------- UI CUCUMBER REPORT ----------
+#      - name: Download UI Cucumber JSON artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: ui-cucumber-json
+#          path: ui-cucumber-json
+#        continue-on-error: true
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v4
+#        with:
+#          node-version: '20'
+#
+#      - name: Install cucumber-html-reporter
+#        run: |
+#          npm init -y
+#          npm install cucumber-html-reporter --save-dev
+#
+#      - name: Generate UI Cucumber HTML report
+#        run: |
+#          if [ -f "ui-cucumber-json/cucumber.json" ]; then
+#            node -e "
+#            const reporter = require('cucumber-html-reporter');
+#            const options = {
+#              theme: 'bootstrap',
+#              jsonFile: 'ui-cucumber-json/cucumber.json',
+#              output: 'reports/ui-cucumber-report/index.html',
+#              reportSuiteAsScenarios: true,
+#              launchReport: false,
+#              metadata: {
+#                'Test Type': 'UI Tests',
+#                'Application': 'Travel Itinerary Builder',
+#                'Browser': 'Chrome',
+#                'Platform': 'Ubuntu Latest',
+#                'Parallel': 'Scenarios',
+#                'Executed': 'GitHub Actions'
+#              }
+#            };
+#            reporter.generate(options);
+#            "
+#          else
+#            echo "No UI Cucumber JSON found"
+#          fi
+#        continue-on-error: true
+#
+#      # ---------- API ALLURE REPORT ----------
+#      - name: Download API Allure results
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: api-allure-results
+#          path: api-allure-results
+#        continue-on-error: true
+#
+#      - name: Generate API Allure report
+#        run: |
+#          if [ -d "api-allure-results" ] && [ "$(ls -A api-allure-results)" ]; then
+#            allure generate api-allure-results --clean -o reports/api-allure-report
+#          else
+#            echo "No API Allure results found"
+#          fi
+#        continue-on-error: true
+#
+#      # ---------- JMETER REPORT ----------
+#      - name: Download JMeter results
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: jmeter-results
+#          path: jmeter-results
+#        continue-on-error: true
+#
+#      - name: Copy JMeter report
+#        run: |
+#          if [ -d "jmeter-results/html-report" ]; then
+#            cp -r jmeter-results/html-report/* reports/jmeter-report/
+#          else
+#            echo "No JMeter report found"
+#          fi
+#        continue-on-error: true
+
+      # ---------- FRONTEND SECURITY REPORT ----------
+      - name: Download Frontend ZAP report
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-security-report
+          path: frontend-security-report
+        continue-on-error: true
+
+      - name: Copy Frontend ZAP report
+        run: |
+          if [ -d "frontend-security-report" ]; then
+            cp -r frontend-security-report/* reports/frontend-security/
+          else
+            echo "No Frontend security report found"
+          fi
+        continue-on-error: true
+
+      # ---------- BACKEND SECURITY REPORT ----------
+      - name: Download Backend ZAP report
+        uses: actions/download-artifact@v4
+        with:
+          name: tib-api-report
+          path: backend-security-report
+        continue-on-error: true
+
+      - name: Copy Backend ZAP report
+        run: |
+          if [ -d "backend-security-report" ]; then
+            cp -r backend-security-report/* reports/backend-security/
+          else
+            echo "No Backend security report found"
+          fi
+        continue-on-error: true
+
+      # ---------- CREATE INDEX PAGE ----------
+      - name: Create reports index page
+        run: |
+          cat > reports/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Travel Itinerary Builder - QA Reports</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 40px 20px;
+              }
+              .container {
+                max-width: 1400px;
+                margin: 0 auto;
+              }
+              h1 {
+                color: white;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 2.8em;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+              }
+              .subtitle {
+                color: rgba(255,255,255,0.9);
+                text-align: center;
+                margin-bottom: 50px;
+                font-size: 1.2em;
+              }
+              .section-title {
+                color: white;
+                font-size: 1.8em;
+                margin: 40px 0 20px 0;
+                padding-left: 10px;
+                border-left: 5px solid white;
+              }
+              .reports-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                margin-bottom: 40px;
+              }
+              .report-card {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                position: relative;
+                overflow: hidden;
+              }
+              .report-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(90deg, #667eea, #764ba2);
+              }
+              .report-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+              }
+              .report-icon {
+                font-size: 3.5em;
+                margin-bottom: 15px;
+                display: block;
+              }
+              .report-title {
+                font-size: 1.5em;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #333;
+              }
+              .report-description {
+                color: #666;
+                line-height: 1.6;
+                font-size: 0.95em;
+              }
+              .report-badge {
+                display: inline-block;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.75em;
+                font-weight: bold;
+                margin-top: 15px;
+                text-transform: uppercase;
+              }
+              .badge-ui { background: #e3f2fd; color: #1976d2; }
+              .badge-api { background: #f3e5f5; color: #7b1fa2; }
+              .badge-performance { background: #fff3e0; color: #e65100; }
+              .badge-security { background: #ffebee; color: #c62828; }
+              .footer {
+                text-align: center;
+                color: white;
+                margin-top: 60px;
+                font-size: 0.9em;
+                padding: 20px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 10px;
+              }
+              .footer-links {
+                margin-top: 15px;
+              }
+              .footer-links a {
+                color: white;
+                text-decoration: none;
+                margin: 0 15px;
+                opacity: 0.8;
+                transition: opacity 0.3s;
+              }
+              .footer-links a:hover {
+                opacity: 1;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>✈️ Travel Itinerary Builder</h1>
+              <div class="subtitle">Comprehensive QA Test Reports Dashboard</div>
+
+              <!-- UI Testing Reports -->
+              <div class="section-title">🖥️ UI Testing</div>
+              <div class="reports-grid">
+                <a href="ui-allure-report/index.html" class="report-card">
+                  <span class="report-icon">📊</span>
+                  <div class="report-title">UI Allure Report</div>
+                  <div class="report-description">
+                    Detailed UI test execution results with step-by-step breakdowns, screenshots, and historical trends
+                  </div>
+                  <span class="report-badge badge-ui">UI Tests</span>
+                </a>
+
+                <a href="ui-cucumber-report/index.html" class="report-card">
+                  <span class="report-icon">🥒</span>
+                  <div class="report-title">UI Cucumber Report</div>
+                  <div class="report-description">
+                    BDD scenarios in Gherkin syntax showing feature test outcomes with business-readable format
+                  </div>
+                  <span class="report-badge badge-ui">UI Tests</span>
+                </a>
+              </div>
+
+              <!-- API Testing Reports -->
+              <div class="section-title">🔌 API Testing</div>
+              <div class="reports-grid">
+                <a href="api-allure-report/index.html" class="report-card">
+                  <span class="report-icon">📡</span>
+                  <div class="report-title">API Allure Report</div>
+                  <div class="report-description">
+                    Comprehensive API test results including request/response details, assertions, and execution analytics
+                  </div>
+                  <span class="report-badge badge-api">API Tests</span>
+                </a>
+              </div>
+
+              <!-- Performance Testing Reports -->
+              <div class="section-title">⚡ Performance Testing</div>
+              <div class="reports-grid">
+                <a href="jmeter-report/index.html" class="report-card">
+                  <span class="report-icon">📈</span>
+                  <div class="report-title">JMeter Performance Report</div>
+                  <div class="report-description">
+                    Load testing metrics including response times, throughput, error rates, and performance graphs
+                  </div>
+                  <span class="report-badge badge-performance">Performance</span>
+                </a>
+              </div>
+
+              <!-- Security Testing Reports -->
+              <div class="section-title">🔒 Security Testing</div>
+              <div class="reports-grid">
+                <a href="frontend-security/zap-frontend-report.html" class="report-card">
+                  <span class="report-icon">🛡️</span>
+                  <div class="report-title">Frontend Security Report</div>
+                  <div class="report-description">
+                    OWASP ZAP scan results for the frontend application with vulnerability assessments and risk ratings
+                  </div>
+                  <span class="report-badge badge-security">Security</span>
+                </a>
+
+                <a href="backend-security/zap-api-report.html" class="report-card">
+                  <span class="report-icon">🔐</span>
+                  <div class="report-title">Backend API Security Report</div>
+                  <div class="report-description">
+                    OWASP ZAP API security scan with detailed vulnerability analysis and remediation recommendations
+                  </div>
+                  <span class="report-badge badge-security">Security</span>
+                </a>
+              </div>
+
+              <div class="footer">
+                <div>Generated by GitHub Actions CI/CD Pipeline</div>
+                <div style="margin-top: 10px; opacity: 0.8;">
+                  Travel Itinerary Builder QA Automation • Build #${GITHUB_RUN_NUMBER}
+                </div>
+                <div class="footer-links">
+                  <a href="https://github.com/${GITHUB_REPOSITORY}" target="_blank">📦 Repository</a>
+                  <a href="https://github.com/${GITHUB_REPOSITORY}/actions" target="_blank">🔄 Actions</a>
+                </div>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
       - name: Deploy all reports
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -279,6 +642,7 @@ jobs:
           publish_dir: reports
           publish_branch: gh-pages
           force_orphan: true
+        continue-on-error: true
 
 #  # ------------------------
 #  # 9. SLACK NOTIFICATION
