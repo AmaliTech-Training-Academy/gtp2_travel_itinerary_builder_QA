@@ -124,33 +124,35 @@ jobs:
 #  # ------------------------
 #  # 5. BACKEND SECURITY (OWASP ZAP)
 #  # ------------------------
-#  backend-security:
-#    name: 🔒 Backend Security Scan
-#    runs-on: ubuntu-latest
-#    needs: api-tests
-#    if: always()
-#
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#
-#      - name: Prepare security report folder
-#        run: mkdir -p security/backend-security
-#
-#      - name: Run ZAP Baseline Scan against API
-#        run: |
-#          docker run --rm -v ${{ github.workspace }}/security/backend-security:/zap/wrk:rw \
-#            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-#            -t https://your-api-staging-url.com \
-#            -r zap-api-report.html \
-#            -J zap-api-report.json
-#
-#      - name: Upload ZAP API Report
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: backend-security-report
-#          path: security/backend-security
-#
+  backend-security:
+    name: 🔒 Backend Security Scan
+    runs-on: ubuntu-latest
+    needs: api-tests
+    if: always()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare security report folder
+        run: mkdir -p security_report/backend
+
+      - name: Run ZAP Baseline Scan against API
+        run: |
+          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
+            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
+            -r zap-api-report.html \
+            -J zap-api-report.json \
+            -I
+
+      - name: Upload ZAP API Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tib-api-report
+          path: security_report/backend/
+
 #  # ------------------------
 #  # 6. FRONTEND SECURITY (OWASP ZAP)
 #  # ------------------------

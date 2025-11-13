@@ -22,7 +22,7 @@ public class AuthTest extends BaseTest {
     @ParameterizedTest(name = "TC001 - Verify registration fails with invalid OTP [{index}]")
     @MethodSource("com.capstone.api_tests.testdata.AuthTestData#validRegistrationDataWithWrongOTPStream")
     @Severity(SeverityLevel.CRITICAL)
-    public void testRegistrationFailsWithInvalidOtp(String firstName, String lastName, String email, String password, String otp) {
+    public void testRegistrationFailsWithInvalidOtp() {
         var registerData = AuthTestData.validRegistrationDataWithWrongOTP();
 
         Response response = auth.register(registerData);
