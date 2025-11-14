@@ -106,22 +106,28 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v4
 
-        - name: Run K6 performance tests
+        - name: Create performance directory with proper permissions
           run: |
             mkdir -p performance/backend
-            docker run --rm -v ${{ github.workspace }}/performance:/performance \
+            chmod -R 777 performance/backend
+
+        - name: Run K6 performance tests
+          run: |
+            docker run --rm \
+              --user $(id -u):$(id -g) \
+              -v ${{ github.workspace }}/performance:/performance \
               grafana/k6:latest run \
               --out json=/performance/backend/k6-results.json \
               --summary-export=/performance/backend/k6-summary.json \
               /performance/backend/k6-backend-test.js
-          continue-on-error: true
+            continue-on-error: true
 
         - name: Generate K6 HTML Report
           run: |
+            chmod -R 777 performance/backend
             docker run --rm \
+            --user $(id -u):$(id -g) \
             -v ${{ github.workspace }}/performance/backend:/report \
-            -e K6_RESULTS_FILE=/report/k6-results.json \
-            -e K6_SUMMARY_FILE=/report/k6-summary.json \
             ghcr.io/benc-uk/k6-reporter:2.3.0 \
             /report/k6-results.json
           continue-on-error: true
