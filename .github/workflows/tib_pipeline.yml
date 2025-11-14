@@ -31,7 +31,7 @@ jobs:
   #        if: always()
   #        uses: actions/upload-artifact@v4
   #        with:
-  #          name: allure-results
+  #          name: ui-allure-results
   #          path: allure-results
   #
   #      - name: Upload Cucumber JSON results
@@ -44,29 +44,27 @@ jobs:
   # ------------------------
   # 2. API TESTS (Rest Assured)
   # ------------------------
-#    api-tests:
-#      name: 🛠️ API Tests
-#      runs-on: ubuntu-latest
-#      continue-on-error: false
-#
-#      steps:
-#        - name: Checkout repository
-#          uses: actions/checkout@v4
-#
-#        - name: Build Docker image for API tests
-#          run: docker build -t travel_api_tests .
-#
-#        - name: Run API tests
-#          run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
-#
-#        - name: Upload API Allure results
-#          if: always()
-#          uses: actions/upload-artifact@v4
-#          with:
-#            name: api-allure-results
-#            path: allure-results
+    api-tests:
+      name: 🛠️ API Tests
+      runs-on: ubuntu-latest
+      continue-on-error: false
 
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
 
+        - name: Build Docker image for API tests
+          run: docker build -t travel_api_tests .
+
+        - name: Run API tests
+          run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
+
+        - name: Upload API Allure results
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: api-allure-results
+            path: allure-results
 
 
   #  # ------------------------
@@ -177,7 +175,7 @@ jobs:
       name: 📊 Aggregate All Reports
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security]
-      needs: [frontend-performance, backend-security, frontend-security]
+      needs: [api-tests, frontend-performance, backend-security, frontend-security]
       if: always()
 
       steps:
@@ -635,7 +633,7 @@ jobs:
       name: 🔔 Slack Notification
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
-      needs: [ backend-security, frontend-performance, frontend-security, deploy-reports ]
+      needs: [ api-tests, backend-security, frontend-performance, frontend-security, deploy-reports ]
       if: always()
 
       steps:

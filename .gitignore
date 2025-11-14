@@ -12,7 +12,7 @@ target/
 *.iml
 *.ipr
 allure-results
-txt
+txt/
 #docker-compose.yml
 #Dockerfile
 
