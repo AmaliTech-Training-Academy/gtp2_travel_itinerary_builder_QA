@@ -115,7 +115,7 @@ jobs:
             chmod 777 performance/frontend
             lighthouse https://d3uvhar7i2kujw.cloudfront.net/ \
             --output=html \
-            --output-path=frontend-performance/report.html \
+            --output-path=performance/frontend/report.html \
             --chrome-flags="--headless"
 
         - name: Upload Frontend Performance results
