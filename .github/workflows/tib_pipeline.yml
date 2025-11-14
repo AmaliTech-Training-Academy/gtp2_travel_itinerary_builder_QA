@@ -66,83 +66,11 @@ jobs:
 #            name: api-allure-results
 #            path: allure-results
 
-  # ------------------------
-  # 3. BACKEND PERFORMANCE (JMeter)
-  # ------------------------
-  #  backend-performance:
-  #    name: ⚡ Backend Performance (JMeter)
-  #    runs-on: ubuntu-latest
-  #    needs: api-tests
-  #    if: always()
-  #
-  #    steps:
-  #      - name: Checkout repository
-  #        uses: actions/checkout@v4
-  #
-  #      - name: Run JMeter API test plan
-  #        run: |
-  #          mkdir -p jmeter-results
-  #          docker run --rm -v ${{ github.workspace }}:/jmeter \
-  #            justb4/jmeter \
-  #            -n -t /jmeter/performance/backend/TIB_API_Backend_Performance_Test_Plan.jmx  \
-  #            -l /jmeter/jmeter-results/results.jtl \
-  #            -e -o /jmeter/jmeter-results/html-report
-  #      - name: Upload JMeter results
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: jmeter-results
-  #          path: jmeter-results
-
-
-    # ------------------------
-    # BACKEND PERFORMANCE (K6)
-    # ------------------------
-    backend-performance:
-      name: ⚡ Backend Performance (K6)
-      runs-on: ubuntu-latest
-      if: always()
-
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-
-        - name: Create performance directory with proper permissions
-          run: |
-            mkdir -p performance/backend
-            chmod -R 777 performance/backend
-
-        - name: Run K6 performance tests
-          run: |
-            docker run --rm \
-              --user $(id -u):$(id -g) \
-              -v ${{ github.workspace }}/performance:/performance \
-              grafana/k6:latest run \
-              --out json=/performance/backend/k6-results.json \
-              --summary-export=/performance/backend/k6-summary.json \
-              /performance/backend/k6-backend-test.js
-            continue-on-error: true
-
-        - name: Generate K6 HTML Report
-          run: |
-            chmod -R 777 performance/backend
-            docker run --rm \
-            --user $(id -u):$(id -g) \
-            -v ${{ github.workspace }}/performance/backend:/report \
-            ghcr.io/benc-uk/k6-reporter:2.3.0 \
-            /report/k6-results.json
-          continue-on-error: true
-
-        - name: Upload Backend Performance results
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: backend-performance
-            path: performance/backend
 
 
 
   #  # ------------------------
-  #  # 4. FRONTEND PERFORMANCE (Optional Lighthouse)
+  #  # 3. FRONTEND PERFORMANCE (Optional Lighthouse)
   #  # ------------------------
     frontend-performance:
       name: 🌐 Frontend Performance (Lighthouse)
@@ -172,7 +100,7 @@ jobs:
             path: performance/frontend
 
   #  # ------------------------
-  #  # 5. BACKEND SECURITY (OWASP ZAP)
+  #  # 4. BACKEND SECURITY (OWASP ZAP)
   #  # ------------------------
     backend-security:
       name: 🔒 Backend Security Scan
@@ -208,7 +136,7 @@ jobs:
             path: security_report/backend/
 
     #  # ------------------------
-    #  # 6. FRONTEND SECURITY (OWASP ZAP)
+    #  # 5. FRONTEND SECURITY (OWASP ZAP)
     #  # ------------------------
     frontend-security:
       name: 🔒 Frontend Security Scan
@@ -243,13 +171,13 @@ jobs:
             path: security_report/frontend/
     #
     #  # ------------------------
-    #  # 7. AGGREGATE ALL REPORTS
+    #  # 6. AGGREGATE ALL REPORTS
     #  # ------------------------
     aggregate-reports:
       name: 📊 Aggregate All Reports
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security]
-      needs: [frontend-performance, backend-performance, backend-security, frontend-security]
+      needs: [frontend-performance, backend-security, frontend-security]
       if: always()
 
       steps:
@@ -271,21 +199,12 @@ jobs:
         #        with:
         #          name: cucumber-json
         #          path: reports/cucumber-json
-        #      - uses: actions/download-artifact@v4
-        #        with:
-        #          name: jmeter-results
-        #          path: reports/jmeter
+
         - name: Download frontend-performance
           uses: actions/download-artifact@v4
           with:
             name: frontend-performance
             path: reports/frontend-performance
-
-        - name: Download backend-performance
-          uses: actions/download-artifact@v4
-          with:
-              name: backend-performance
-              path: reports/backend-performance
 
         - name: Download backend-security-report
           uses: actions/download-artifact@v4
@@ -323,7 +242,7 @@ jobs:
     #          "
     #
     #  # ------------------------
-    # 8. DEPLOY REPORTS
+    # 7. DEPLOY REPORTS
     # ------------------------
     deploy-reports:
       name: 🚀 Deploy Reports to GitHub Pages
@@ -340,10 +259,8 @@ jobs:
           run: |
             #    mkdir -p reports/ui-allure-report
             #    mkdir -p reports/ui-cucumber-report
-            #    mkdir -p reports/jmeter-report
                  mkdir -p reports/api-allure-report
                  mkdir -p reports/frontend-performance
-                 mkdir -p reports/backend-performance
                  mkdir -p reports/frontend-security
                  mkdir -p reports/backend-security
 
@@ -430,43 +347,6 @@ jobs:
               allure generate api-allure-results --clean -o reports/api-allure-report
             else
               echo "No API Allure results found"
-            fi
-          continue-on-error: true
-        #
-        #      # ---------- JMETER REPORT ----------
-        #      - name: Download JMeter results
-        #        uses: actions/download-artifact@v4
-        #        with:
-        #          name: jmeter-results
-        #          path: jmeter-results
-        #        continue-on-error: true
-        #
-        #      - name: Copy JMeter report
-        #        run: |
-        #          if [ -d "jmeter-results/html-report" ]; then
-        #            cp -r jmeter-results/html-report/* reports/jmeter-report/
-        #          else
-        #            echo "No JMeter report found"
-        #          fi
-        #        continue-on-error: true
-
-
-
-
-        # ---------- BACKEND PERFORMANCE REPORT ----------
-        - name: Download Backend Performance report
-          uses: actions/download-artifact@v4
-          with:
-            name: backend-performance
-            path: backend-performance
-          continue-on-error: true
-
-        - name: Copy Backend Performance report
-          run: |
-            if [ -d "backend-performance" ]; then
-              cp -r backend-performance/* reports/backend-performance/
-            else
-              echo "No Backend Performance report found"
             fi
           continue-on-error: true
 
@@ -700,15 +580,6 @@ jobs:
                 </div>
                 <span class="report-badge badge-performance">Performance</span>
                 </a>
-              
-                <a href="backend-performance/index.html" class="report-card">
-                <span class="report-icon">📈</span>
-                <div class="report-title">Backend Performance Report</div>
-                <div class="report-description">
-                K6 load testing results including API response times, throughput, error rates, and performance trends
-                </div>
-                <span class="report-badge badge-performance">Performance</span>
-                </a>
                 </div>
   
                 <!-- Security Testing Reports -->
@@ -764,7 +635,7 @@ jobs:
       name: 🔔 Slack Notification
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
-      needs: [ backend-security, frontend-performance, backend-performance, frontend-security, deploy-reports ]
+      needs: [ backend-security, frontend-performance, frontend-security, deploy-reports ]
       if: always()
 
       steps:
@@ -779,7 +650,6 @@ jobs:
             # Detect failures from upstream jobs
             if [[ "${{ needs.ui-tests.result }}" == "failure" || \
                   "${{ needs.api-tests.result }}" == "failure" || \
-                  "${{ needs.backend-performance.result }}" == "failure" || \
                   "${{ needs.frontend-performance.result }}" == "failure" || \
                   "${{ needs.backend-security.result }}" == "failure" || \
                   "${{ needs.frontend-security.result }}" == "failure" ]]; then
@@ -792,13 +662,11 @@ jobs:
             # Detect cancelled or skipped jobs
             if [[ "${{ needs.ui-tests.result }}" == "cancelled" || \
                   "${{ needs.api-tests.result }}" == "cancelled" || \
-                  "${{ needs.backend-performance.result }}" == "cancelled" || \
                   "${{ needs.frontend-performance.result }}" == "cancelled" || \
                   "${{ needs.backend-security.result }}" == "cancelled" || \
                   "${{ needs.frontend-security.result }}" == "cancelled" || \
                   "${{ needs.ui-tests.result }}" == "skipped" || \
                   "${{ needs.api-tests.result }}" == "skipped" || \
-                  "${{ needs.backend-performance.result }}" == "skipped" || \
                   "${{ needs.frontend-performance.result }}" == "skipped" || \
                   "${{ needs.backend-security.result }}" == "skipped" || \
                   "${{ needs.frontend-security.result }}" == "skipped" ]]; then
@@ -830,7 +698,7 @@ jobs:
                       \"fields\": [
                         {
                           \"type\": \"mrkdwn\",
-                          \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-allure-report/index.html|UI Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-performance/index.html|Backend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend ZAP Security Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend ZAP Security Report>\"
+                          \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-allure-report/index.html|UI Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend ZAP Security Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend ZAP Security Report>\"
                         },
                         {
                           \"type\": \"mrkdwn\",
