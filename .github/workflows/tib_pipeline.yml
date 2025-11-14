@@ -223,7 +223,7 @@ jobs:
         #        with:
         #          name: jmeter-results
         #          path: reports/jmeter
-          uses: actions/download-artifact@v4
+        - uses: actions/download-artifact@v4
           with:
             name: frontend-performance
             path: reports/frontend-performance
