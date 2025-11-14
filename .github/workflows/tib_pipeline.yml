@@ -207,6 +207,7 @@ jobs:
 
         - name: Download All Artifacts
           # preserved commented artifact downloads above for future use
+          run: echo "Downloading artifacts..."
 #          uses: actions/download-artifact@v4
         #        with:
         #          name: allure-results
@@ -654,7 +655,7 @@ jobs:
       name: 🔔 Slack Notification
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
-      needs: [ api-tests, backend-security, frontend-security, deploy-reports ]
+      needs: [ backend-security, frontend-performance, frontend-security, deploy-reports ]
       if: always()
 
       steps:
