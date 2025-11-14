@@ -227,10 +227,12 @@ jobs:
         #        with:
         #          name: jmeter-results
         #          path: reports/jmeter
-        - uses: actions/download-artifact@v4
+        - name: Download frontend-performance
+          uses: actions/download-artifact@v4
           with:
             name: frontend-performance
             path: reports/frontend-performance
+
         - name: Download backend-security-report
           uses: actions/download-artifact@v4
           with:
@@ -286,6 +288,7 @@ jobs:
             #          mkdir -p reports/ui-cucumber-report
             #          mkdir -p reports/jmeter-report
                  mkdir -p reports/api-allure-report
+                 mkdir -p reports/frontend-performance
                  mkdir -p reports/frontend-security
                  mkdir -p reports/backend-security
 
@@ -391,6 +394,25 @@ jobs:
         #            echo "No JMeter report found"
         #          fi
         #        continue-on-error: true
+
+
+        # ---------- FRONTEND PERFORMANCE REPORT ----------
+        - name: Download Frontend Performance report
+          uses: actions/download-artifact@v4
+          with:
+            name: frontend-performance
+            path: frontend-performance
+          continue-on-error: true
+
+        - name: Copy Frontend Performance report
+          run: |
+            if [ -d "frontend-performance" ]; then
+              cp -r frontend-performance/* reports/frontend-performance/
+            else
+              echo "No Frontend Performance report found"
+            fi
+          continue-on-error: true
+
 
         # ---------- FRONTEND SECURITY REPORT ----------
         - name: Download Frontend ZAP report
