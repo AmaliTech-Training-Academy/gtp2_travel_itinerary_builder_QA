@@ -126,7 +126,7 @@ jobs:
     backend-security:
       name: 🔒 Backend Security Scan
       runs-on: ubuntu-latest
-      needs: api-tests
+#      needs: api-tests
       if: always()
 
       steps:
