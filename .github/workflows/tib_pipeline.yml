@@ -112,10 +112,9 @@ jobs:
         - name: Run Lighthouse against deployed app
           run: |
             mkdir -p performance/frontend
-            chmod 777 performance/frontend
             lighthouse https://d3uvhar7i2kujw.cloudfront.net/ \
             --output=html \
-            --output-path=performance/frontend/report.html \
+            --output-path=performance/frontend/index.html \
             --chrome-flags="--headless"
 
         - name: Upload Frontend Performance results
