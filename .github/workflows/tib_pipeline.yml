@@ -280,8 +280,8 @@ jobs:
           run: |
             #          mkdir -p reports/ui-allure-report
             #          mkdir -p reports/ui-cucumber-report
-            #          mkdir -p reports/api-allure-report
             #          mkdir -p reports/jmeter-report
+                 mkdir -p reports/api-allure-report
                  mkdir -p reports/frontend-security
                  mkdir -p reports/backend-security
 
@@ -354,22 +354,22 @@ jobs:
         #          fi
         #        continue-on-error: true
         #
-        #      # ---------- API ALLURE REPORT ----------
-        #      - name: Download API Allure results
-        #        uses: actions/download-artifact@v4
-        #        with:
-        #          name: api-allure-results
-        #          path: api-allure-results
-        #        continue-on-error: true
-        #
-        #      - name: Generate API Allure report
-        #        run: |
-        #          if [ -d "api-allure-results" ] && [ "$(ls -A api-allure-results)" ]; then
-        #            allure generate api-allure-results --clean -o reports/api-allure-report
-        #          else
-        #            echo "No API Allure results found"
-        #          fi
-        #        continue-on-error: true
+        # ---------- API ALLURE REPORT ----------
+        - name: Download API Allure results
+          uses: actions/download-artifact@v4
+          with:
+            name: api-allure-results
+            path: api-allure-results
+          continue-on-error: true
+
+        - name: Generate API Allure report
+          run: |
+            if [ -d "api-allure-results" ] && [ "$(ls -A api-allure-results)" ]; then
+              allure generate api-allure-results --clean -o reports/api-allure-report
+            else
+              echo "No API Allure results found"
+            fi
+          continue-on-error: true
         #
         #      # ---------- JMETER REPORT ----------
         #      - name: Download JMeter results
