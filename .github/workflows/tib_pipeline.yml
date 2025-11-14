@@ -93,6 +93,48 @@ jobs:
   #          name: jmeter-results
   #          path: jmeter-results
 
+
+    # ------------------------
+    # BACKEND PERFORMANCE (K6)
+    # ------------------------
+    backend-performance:
+      name: ⚡ Backend Performance (K6)
+      runs-on: ubuntu-latest
+      if: always()
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Run K6 performance tests
+          run: |
+            mkdir -p performance/backend
+            docker run --rm -v ${{ github.workspace }}/performance:/performance \
+              grafana/k6:latest run \
+              --out json=/performance/backend/k6-results.json \
+              --summary-export=/performance/backend/k6-summary.json \
+              /performance/backend/k6-backend-test.js
+          continue-on-error: true
+
+        - name: Generate K6 HTML Report
+          run: |
+            docker run --rm \
+            -v ${{ github.workspace }}/performance/backend:/report \
+            -e K6_RESULTS_FILE=/report/k6-results.json \
+            -e K6_SUMMARY_FILE=/report/k6-summary.json \
+            ghcr.io/benc-uk/k6-reporter:2.3.0 \
+            /report/k6-results.json
+          continue-on-error: true
+
+        - name: Upload Backend Performance results
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: backend-performance
+            path: performance/backend
+
+
+
   #  # ------------------------
   #  # 4. FRONTEND PERFORMANCE (Optional Lighthouse)
   #  # ------------------------
@@ -201,7 +243,7 @@ jobs:
       name: 📊 Aggregate All Reports
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security]
-      needs: [frontend-performance, backend-security, frontend-security]
+      needs: [frontend-performance, backend-performance, backend-security, frontend-security]
       if: always()
 
       steps:
@@ -232,6 +274,12 @@ jobs:
           with:
             name: frontend-performance
             path: reports/frontend-performance
+
+        - name: Download backend-performance
+          uses: actions/download-artifact@v4
+          with:
+              name: backend-performance
+              path: reports/backend-performance
 
         - name: Download backend-security-report
           uses: actions/download-artifact@v4
@@ -284,11 +332,12 @@ jobs:
         # Create reports directory structure
         - name: Create reports directory
           run: |
-            #          mkdir -p reports/ui-allure-report
-            #          mkdir -p reports/ui-cucumber-report
-            #          mkdir -p reports/jmeter-report
+            #    mkdir -p reports/ui-allure-report
+            #    mkdir -p reports/ui-cucumber-report
+            #    mkdir -p reports/jmeter-report
                  mkdir -p reports/api-allure-report
                  mkdir -p reports/frontend-performance
+                 mkdir -p reports/backend-performance
                  mkdir -p reports/frontend-security
                  mkdir -p reports/backend-security
 
@@ -394,6 +443,26 @@ jobs:
         #            echo "No JMeter report found"
         #          fi
         #        continue-on-error: true
+
+
+
+
+        # ---------- BACKEND PERFORMANCE REPORT ----------
+        - name: Download Backend Performance report
+          uses: actions/download-artifact@v4
+          with:
+            name: backend-performance
+            path: backend-performance
+          continue-on-error: true
+
+        - name: Copy Backend Performance report
+          run: |
+            if [ -d "backend-performance" ]; then
+              cp -r backend-performance/* reports/backend-performance/
+            else
+              echo "No Backend Performance report found"
+            fi
+          continue-on-error: true
 
 
         # ---------- FRONTEND PERFORMANCE REPORT ----------
@@ -617,14 +686,23 @@ jobs:
                 <!-- Performance Testing Reports -->
                 <div class="section-title">⚡ Performance Testing</div>
                 <div class="reports-grid">
-                  <a href="jmeter-report/index.html" class="report-card">
-                    <span class="report-icon">📈</span>
-                    <div class="report-title">JMeter Performance Report</div>
-                    <div class="report-description">
-                      Load testing metrics including response times, throughput, error rates, and performance graphs
-                    </div>
-                    <span class="report-badge badge-performance">Performance</span>
-                  </a>
+                <a href="frontend-performance/index.html" class="report-card">
+                <span class="report-icon">🌐</span>
+                <div class="report-title">Frontend Performance Report</div>
+                <div class="report-description">
+                Lighthouse performance metrics including load times, accessibility scores, SEO ratings, and best practices
+                </div>
+                <span class="report-badge badge-performance">Performance</span>
+                </a>
+              
+                <a href="backend-performance/index.html" class="report-card">
+                <span class="report-icon">📈</span>
+                <div class="report-title">Backend Performance Report</div>
+                <div class="report-description">
+                K6 load testing results including API response times, throughput, error rates, and performance trends
+                </div>
+                <span class="report-badge badge-performance">Performance</span>
+                </a>
                 </div>
   
                 <!-- Security Testing Reports -->
@@ -680,7 +758,7 @@ jobs:
       name: 🔔 Slack Notification
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
-      needs: [ backend-security, frontend-performance, frontend-security, deploy-reports ]
+      needs: [ backend-security, frontend-performance, backend-performance, frontend-security, deploy-reports ]
       if: always()
 
       steps:
@@ -746,7 +824,7 @@ jobs:
                       \"fields\": [
                         {
                           \"type\": \"mrkdwn\",
-                          \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-allure-report/index.html|UI Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/jmeter-report/index.html|JMeter Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend ZAP Security Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend ZAP Security Report>\"
+                          \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-allure-report/index.html|UI Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-performance/index.html|Backend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend ZAP Security Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend ZAP Security Report>\"
                         },
                         {
                           \"type\": \"mrkdwn\",
