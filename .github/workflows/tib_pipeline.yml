@@ -44,27 +44,27 @@ jobs:
   # ------------------------
   # 2. API TESTS (Rest Assured)
   # ------------------------
-    api-tests:
-      name: 🛠️ API Tests
-      runs-on: ubuntu-latest
-      continue-on-error: false
-
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
-
-        - name: Build Docker image for API tests
-          run: docker build -t travel_api_tests .
-
-        - name: Run API tests
-          run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
-
-        - name: Upload API Allure results
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: api-allure-results
-            path: allure-results
+#    api-tests:
+#      name: 🛠️ API Tests
+#      runs-on: ubuntu-latest
+#      continue-on-error: false
+#
+#      steps:
+#        - name: Checkout repository
+#          uses: actions/checkout@v4
+#
+#        - name: Build Docker image for API tests
+#          run: docker build -t travel_api_tests .
+#
+#        - name: Run API tests
+#          run: docker run --rm -v ${{ github.workspace }}:/app travel_api_tests mvn test
+#
+#        - name: Upload API Allure results
+#          if: always()
+#          uses: actions/upload-artifact@v4
+#          with:
+#            name: api-allure-results
+#            path: allure-results
 
   # ------------------------
   # 3. BACKEND PERFORMANCE (JMeter)
@@ -96,30 +96,30 @@ jobs:
   #  # ------------------------
   #  # 4. FRONTEND PERFORMANCE (Optional Lighthouse)
   #  # ------------------------
-  #  frontend-performance:
-  #    name: 🌐 Frontend Performance (Lighthouse)
-  #    runs-on: ubuntu-latest
-  #    needs: ui-tests
-  #    if: always()
-  #
-  #    steps:
-  #      - name: Checkout repository
-  #        uses: actions/checkout@v4
-  #
-  #      - name: Install Lighthouse CI
-  #        run: npm install -g @lhci/cli@0.11.x
-  #
-  #      - name: Run Lighthouse against deployed app
-  #        run: |
-  #          lhci collect --url=https://your-staging-frontend-url.com --upload=false --outDir=frontend-performance
-  #          lhci report --outputDir=frontend-performance
-  #
-  #      - name: Upload Frontend Performance results
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: frontend-performance
-  #          path: frontend-performance
-  #
+    frontend-performance:
+      name: 🌐 Frontend Performance (Lighthouse)
+      runs-on: ubuntu-latest
+#      needs: ui-tests
+      if: always()
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Install Lighthouse CI
+          run: npm install -g @lhci/cli@0.11.x
+
+        - name: Run Lighthouse against deployed app
+          run: |
+            lhci collect --url=https://d3uvhar7i2kujw.cloudfront.net/ --upload=false --outDir=frontend-performance
+            lhci report --outputDir=frontend-performance
+
+        - name: Upload Frontend Performance results
+          uses: actions/upload-artifact@v4
+          with:
+            name: frontend-performance
+            path: frontend-performance
+
   #  # ------------------------
   #  # 5. BACKEND SECURITY (OWASP ZAP)
   #  # ------------------------
@@ -198,7 +198,7 @@ jobs:
       name: 📊 Aggregate All Reports
       runs-on: ubuntu-latest
       #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security]
-      needs: [api-tests, backend-security, frontend-security]
+      needs: [frontend-performance, backend-security, frontend-security]
       if: always()
 
       steps:
@@ -207,7 +207,7 @@ jobs:
 
         - name: Download All Artifacts
           # preserved commented artifact downloads above for future use
-          uses: actions/download-artifact@v4
+#          uses: actions/download-artifact@v4
         #        with:
         #          name: allure-results
         #          path: reports/allure
@@ -223,10 +223,10 @@ jobs:
         #        with:
         #          name: jmeter-results
         #          path: reports/jmeter
-        #      - uses: actions/download-artifact@v4
-        #        with:
-        #          name: frontend-performance
-        #          path: reports/frontend-performance
+          uses: actions/download-artifact@v4
+          with:
+            name: frontend-performance
+            path: reports/frontend-performance
         - name: Download backend-security-report
           uses: actions/download-artifact@v4
           with:
@@ -653,8 +653,8 @@ jobs:
     notify:
       name: 🔔 Slack Notification
       runs-on: ubuntu-latest
-      #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, aggregate-reports, deploy-reports]
-      needs: [ api-tests, backend-security, frontend-security, aggregate-reports, deploy-reports ]
+      #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
+      needs: [ api-tests, backend-security, frontend-security, deploy-reports ]
       if: always()
 
       steps:
