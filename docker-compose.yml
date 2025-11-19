@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   selenium:
     image: selenium/standalone-chrome:latest
@@ -8,7 +6,7 @@ services:
       - "4444:4444"
 
   zap:
-    image: owasp/zap2docker-stable
+    image: ghcr.io/zaproxy/zaproxy:stable
     command: zap.sh -daemon -port 8080 -host 0.0.0.0
     ports:
       - "8080:8080"
