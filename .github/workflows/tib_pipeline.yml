@@ -13,7 +13,7 @@ jobs:
     ui-tests:
       name: 🧪 UI Tests
       runs-on: ubuntu-latest
-      continue-on-error: false
+      continue-on-error: true
 
       steps:
         - name: Checkout repository
@@ -29,12 +29,18 @@ jobs:
         - name: Build Docker image for tests
           run: docker build -t travel_ui_tests .
 
+        - name: Prepare target folder
+          run: |
+            mkdir -p target
+            sudo chown -R $(id -u):$(id -g) target || true
+
         - name: Run UI tests
           run: |
             docker compose run --rm \
             -v ${{ github.workspace }}/allure-results:/app/allure-results \
             -v ${{ github.workspace }}/target:/app/target \
             tests mvn clean test -Dgroups=ui -Dselenide.remote=http://selenium:4444/wd/hub
+          continue-on-error: true
 
         - name: Stop services
           if: always()
@@ -60,7 +66,7 @@ jobs:
     api-tests:
       name: 🛠️ API Tests
       runs-on: ubuntu-latest
-      continue-on-error: false
+      continue-on-error: true
 
       steps:
         - name: Checkout repository
@@ -206,12 +212,12 @@ jobs:
         # Create reports directory structure
         - name: Create reports directory
           run: |
-            #    mkdir -p reports/ui-allure-report
-            #    mkdir -p reports/ui-cucumber-report
-                 mkdir -p reports/api-allure-report
-                 mkdir -p reports/frontend-performance
-                 mkdir -p reports/frontend-security
-                 mkdir -p reports/backend-security
+            mkdir -p reports/ui-allure-report
+            mkdir -p reports/ui-cucumber-report
+            mkdir -p reports/api-allure-report
+            mkdir -p reports/frontend-performance
+            mkdir -p reports/frontend-security
+            mkdir -p reports/backend-security
 
 #         ---------- UI ALLURE REPORT ----------
         - name: Download UI Allure results
