@@ -7,11 +7,11 @@ services:
 
   zap:
     image: ghcr.io/zaproxy/zaproxy:stable
-    command: zap.sh -daemon -port 8080 -host 0.0.0.0
+    command: ["/zap/zap.sh", "-daemon", "-port", "8080", "-host", "0.0.0.0", "-config", "api.addrs.addr.name=.*", "-config", "api.addrs.addr.regex=true"]
     ports:
       - "8080:8080"
     volumes:
-      - ./zap:/zap
+      - ./zap:/zap/wrk
 
   tests:
     build: .
