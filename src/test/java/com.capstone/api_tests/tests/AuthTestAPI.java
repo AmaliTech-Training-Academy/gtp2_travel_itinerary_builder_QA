@@ -1,6 +1,6 @@
 package com.capstone.api_tests.tests;
 
-import com.capstone.api_tests.base.BaseTest;
+import com.capstone.api_tests.base.APIBaseTest;
 import com.capstone.api_tests.endpoints.AuthEndpoints;
 import com.capstone.api_tests.testdata.AuthTestData;
 import com.capstone.api_tests.utils.TokenManager;
@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Authentication APIs")
-public class AuthTest extends BaseTest {
+public class AuthTestAPI extends APIBaseTest {
 
     AuthEndpoints auth = new AuthEndpoints();
 

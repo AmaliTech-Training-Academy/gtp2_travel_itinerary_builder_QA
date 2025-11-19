@@ -1,0 +1,16 @@
+{
+  "users": {
+    "admin": { "email": "admin1", "password": "Password123" },
+    "valid_login": { "email": "cufoimmenoutte-8026@yopmail.com", "password": "GOODBOy@123" },
+    "invalid_login": { "email": "cufoimmenoutte-8026@yopmail.com", "password": "GOODBOY@123" },
+    "empty_email": { "email": "", "password": "GOODBOy@123" },
+    "empty_password": { "email": "cufoimmenoutte-8026@yopmail.com", "password": "" },
+    "empty_credentials": { "email": "", "password": "" }
+  },
+  "errors": {
+    "loginFailed": "Invalid username or password",
+    "invalidcredentials": "Please enter a valid email or password and try again. If you have forgotten your password, please reset it.",
+    "otpFailed": "OTP verification failed",
+    "emptyFields": "Fill all required fields"
+  }
+}

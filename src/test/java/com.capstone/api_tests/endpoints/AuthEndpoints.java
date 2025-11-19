@@ -3,7 +3,7 @@ package com.capstone.api_tests.endpoints;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.given;
-import static com.capstone.api_tests.base.BaseTest.requestSpec;
+import static com.capstone.api_tests.base.APIBaseTest.requestSpec;
 import java.util.Map;
 
 public class AuthEndpoints {

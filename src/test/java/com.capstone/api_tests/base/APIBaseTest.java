@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.lessThan;
 
-public class BaseTest {
+public class APIBaseTest {
 
     public static RequestSpecification requestSpec;
     protected static ResponseSpecification responseSpec;

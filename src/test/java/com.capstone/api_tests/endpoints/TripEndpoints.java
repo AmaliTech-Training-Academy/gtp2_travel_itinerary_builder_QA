@@ -1,11 +1,11 @@
 package com.capstone.api_tests.endpoints;
 
-import com.capstone.api_tests.base.BaseTest;
+import com.capstone.api_tests.base.APIBaseTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.Map;
 
-import static com.capstone.api_tests.base.BaseTest.requestSpec;
+import static com.capstone.api_tests.base.APIBaseTest.requestSpec;
 import static io.restassured.RestAssured.given;
 
 public class TripEndpoints {
@@ -56,7 +56,7 @@ public class TripEndpoints {
 
     public Response getAllTrips(String token, int page, int limit) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(APIBaseTest.requestSpec)
                 .queryParam("page", page)
                 .queryParam("limit", limit)
                 .auth().oauth2(token)
@@ -66,7 +66,7 @@ public class TripEndpoints {
 
     public Response getInviteLink(String token, String tripId) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(APIBaseTest.requestSpec)
                 .auth().oauth2(token)
                 .when()
                 .get(BASE_PATH + "/" + tripId + "/invite-link");
@@ -75,7 +75,7 @@ public class TripEndpoints {
 
     public Response addTripMates(String token, String tripId, Object payload) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(APIBaseTest.requestSpec)
                 .auth().oauth2(token)
                 .body(payload)
                 .when()
@@ -86,7 +86,7 @@ public class TripEndpoints {
 
     public Response revokeInvite(String token, String tripId, String email) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(APIBaseTest.requestSpec)
                 .auth().oauth2(token)
                 .queryParam("email", email)
                 .when()
@@ -96,7 +96,7 @@ public class TripEndpoints {
 
     public Response previewInvite(String code) {
         return given()
-                .spec(BaseTest.requestSpec)
+                .spec(APIBaseTest.requestSpec)
                 .get("/trips/invite?token=" + code);
     }
 

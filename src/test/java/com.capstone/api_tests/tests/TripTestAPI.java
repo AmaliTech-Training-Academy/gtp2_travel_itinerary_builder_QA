@@ -1,11 +1,10 @@
 package com.capstone.api_tests.tests;
 
-import com.capstone.api_tests.base.BaseTest;
+import com.capstone.api_tests.base.APIBaseTest;
 import com.capstone.api_tests.endpoints.TripEndpoints;
 import com.capstone.api_tests.triphelpers.TripHelper;
 import com.capstone.api_tests.triphelpers.TestInfoHolder;
 import com.capstone.api_tests.testdata.TripTestData;
-import com.capstone.api_tests.utils.TokenManager;
 import io.qameta.allure.*;
 import org.junit.jupiter.api.*;
 
@@ -16,7 +15,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Management APIs")
-public class TripTest extends BaseTest {
+public class TripTestAPI extends APIBaseTest {
 
     TripEndpoints trip = new TripEndpoints();
     String tripId;

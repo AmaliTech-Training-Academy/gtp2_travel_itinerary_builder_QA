@@ -1,6 +1,6 @@
 package com.capstone.api_tests.tests;
 
-import com.capstone.api_tests.base.BaseTest;
+import com.capstone.api_tests.base.APIBaseTest;
 import com.capstone.api_tests.endpoints.TripEndpoints;
 import com.capstone.api_tests.testdata.TripTestData;
 import io.qameta.allure.*;
@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Management APIs 2")
-public class Trip2Test extends BaseTest{
+public class Trip2TestAPI extends APIBaseTest {
     TripEndpoints trip = new TripEndpoints();
     String tripId;
 
