@@ -8,667 +8,749 @@ on:
 
 jobs:
   # ------------------------
-  # 1. UI TESTS (Selenide + Cucumber BDD)
+  # 1A. UI TESTS - Selenide/JUnit
   # ------------------------
-    ui-tests:
-      name: 🧪 UI Tests
-      runs-on: ubuntu-latest
-      continue-on-error: false
+  ui-selenide-tests:
+    name: 🧪 UI Tests (Selenide)
+    runs-on: ubuntu-latest
+    continue-on-error: false
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Start Selenium and ZAP services
-          run: docker compose up -d selenium zap
+      - name: Start Selenium and ZAP services
+        run: docker compose up -d selenium zap
 
-        - name: Wait for Selenium to be ready
-          run: |
-              timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done' || echo "Selenium might not be fully ready"
+      - name: Wait for Selenium to be ready
+        run: |
+          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done' || echo "Selenium might not be fully ready"
 
-        - name: Build Docker image for tests
-          run: docker build -t travel_ui_tests .
+      - name: Build Docker image for tests
+        run: docker build -t travel_ui_tests .
 
-        - name: Prepare target folder
-          run: |
-            mkdir -p target
-            sudo chown -R $(id -u):$(id -g) target || true
+      - name: Prepare target folder
+        run: |
+          mkdir -p target
+          sudo chown -R $(id -u):$(id -g) target || true
 
-        - name: Run UI tests
-          run: |
-            docker compose run --rm \
-            -v ${{ github.workspace }}/allure-results:/app/allure-results \
-            -v ${{ github.workspace }}/target:/app/target \
-            tests mvn clean test -Dgroups=ui -Dselenide.remote=http://selenium:4444/wd/hub
-          continue-on-error: true
+      - name: Run Selenide UI tests
+        run: |
+          docker compose run --rm \
+          -v ${{ github.workspace }}/allure-results:/app/allure-results \
+          -v ${{ github.workspace }}/target:/app/target \
+          tests mvn clean test -P ui-selenide -Dselenide.remote=http://selenium:4444/wd/hub
+        continue-on-error: true
 
-        - name: Fix permissions for target and allure-results
-          if: always()
-          run: |
-            sudo chmod -R 777 target || true
-            sudo chmod -R 777 allure-results || true
+      - name: Fix permissions for target and allure-results
+        if: always()
+        run: |
+          sudo chmod -R 777 target || true
+          sudo chmod -R 777 allure-results || true
 
+      - name: Stop services
+        if: always()
+        run: docker compose down
 
-        - name: Stop services
-          if: always()
-          run: docker compose down
+      - name: Upload Selenide Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-selenide-allure-results
+          path: allure-results
 
-        - name: Upload Allure results
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: ui-allure-results
-            path: allure-results
+  # ------------------------
+  # 1B. UI TESTS - Cucumber BDD
+  # ------------------------
+  ui-cucumber-tests:
+    name: 🥒 UI Tests (Cucumber)
+    runs-on: ubuntu-latest
+    continue-on-error: false
 
-        - name: Upload Cucumber JSON results
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: ui-cucumber-json
-            path: target/cucumber.json
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start Selenium and ZAP services
+        run: docker compose up -d selenium zap
+
+      - name: Wait for Selenium to be ready
+        run: |
+          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done' || echo "Selenium might not be fully ready"
+
+      - name: Build Docker image for tests
+        run: docker build -t travel_ui_tests .
+
+      - name: Prepare target folder
+        run: |
+          mkdir -p target
+          sudo chown -R $(id -u):$(id -g) target || true
+
+      - name: Run Cucumber BDD tests
+        run: |
+          docker compose run --rm \
+          -v ${{ github.workspace }}/allure-results:/app/allure-results \
+          -v ${{ github.workspace }}/target:/app/target \
+          tests mvn clean test -P ui-cucumber -Dselenide.remote=http://selenium:4444/wd/hub
+        continue-on-error: true
+
+      - name: Fix permissions for target and allure-results
+        if: always()
+        run: |
+          sudo chmod -R 777 target || true
+          sudo chmod -R 777 allure-results || true
+
+      - name: Stop services
+        if: always()
+        run: docker compose down
+
+      - name: Upload Cucumber Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-cucumber-allure-results
+          path: allure-results
+
+      - name: Upload Cucumber JSON results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-cucumber-json
+          path: target/cucumber.json
+
 
   # ------------------------
   # 2. API TESTS (Rest Assured)
   # ------------------------
-    api-tests:
-      name: 🛠️ API Tests
-      runs-on: ubuntu-latest
-      continue-on-error: false
+  api-tests:
+    name: 🛠️ API Tests
+    runs-on: ubuntu-latest
+    continue-on-error: false
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Build Docker image for API tests
-          run: docker build -t travel_api_tests .
+      - name: Build Docker image for API tests
+        run: docker build -t travel_api_tests .
 
-        - name: Create allure-results directory
-          run: mkdir -p ${{ github.workspace }}/allure-results
+      - name: Create allure-results directory
+        run: mkdir -p ${{ github.workspace }}/allure-results
 
-        - name: Run API tests
-          run: |
-            docker run --rm \
-            -v ${{ github.workspace }}/allure-results:/app/allure-results \
-            travel_api_tests mvn clean test -Dgroups=api
-          continue-on-error: false
+      - name: Run API tests
+        run: |
+          docker run --rm \
+          -v ${{ github.workspace }}/allure-results:/app/allure-results \
+          travel_api_tests mvn clean test -Dgroups=api
+        continue-on-error: false
 
-        - name: Upload API Allure results
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: api-allure-results
-            path: allure-results
-            if-no-files-found: warn
+      - name: Upload API Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-results
+          path: allure-results
+          if-no-files-found: warn
 
 
   #  # ------------------------
   #  # 3. FRONTEND PERFORMANCE (Optional Lighthouse)
   #  # ------------------------
-    frontend-performance:
-      name: 🌐 Frontend Performance (Lighthouse)
-      runs-on: ubuntu-latest
-      needs: ui-tests
-      if: always()
+  frontend-performance:
+    name: 🌐 Frontend Performance (Lighthouse)
+    runs-on: ubuntu-latest
+    needs: [ui-selenide-tests, ui-cucumber-tests]
+    if: always()
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Install Lighthouse CI
-          run: npm install -g lighthouse
+      - name: Install Lighthouse CI
+        run: npm install -g lighthouse
 
-        - name: Run Lighthouse against deployed app
-          run: |
-            mkdir -p performance/frontend
-            lighthouse https://d3uvhar7i2kujw.cloudfront.net/ \
-            --output=html \
-            --output-path=performance/frontend/index.html \
-            --chrome-flags="--headless"
+      - name: Run Lighthouse against deployed app
+        run: |
+          mkdir -p performance/frontend
+          lighthouse https://d3uvhar7i2kujw.cloudfront.net/ \
+          --output=html \
+          --output-path=performance/frontend/index.html \
+          --chrome-flags="--headless"
 
-        - name: Upload Frontend Performance results
-          uses: actions/upload-artifact@v4
-          with:
-            name: frontend-performance
-            path: performance/frontend
+      - name: Upload Frontend Performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-performance
+          path: performance/frontend
 
   #  # ------------------------
   #  # 4. BACKEND SECURITY (OWASP ZAP)
   #  # ------------------------
-    backend-security:
-      name: 🔒 Backend Security Scan
-      runs-on: ubuntu-latest
-      needs: api-tests
-      if: always()
+  backend-security:
+    name: 🔒 Backend Security Scan
+    runs-on: ubuntu-latest
+    needs: api-tests
+    if: always()
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Prepare security report folder
-          run: |
-            mkdir -p security_report/backend
-            chmod 777 security_report/backend
-            sudo chown -R $(id -u):$(id -g) security_report/backend
+      - name: Prepare security report folder
+        run: |
+          mkdir -p security_report/backend
+          chmod 777 security_report/backend
+          sudo chown -R $(id -u):$(id -g) security_report/backend
 
-        - name: Run ZAP Baseline Scan against API
-          run: |
-            docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
-              ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
-              -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
-              -f openapi \
-              -r zap-api-report.html \
-              -J zap-api-report.json \
-              -I
+      - name: Run ZAP Baseline Scan against API
+        run: |
+          docker run --rm -v ${{ github.workspace }}/security_report/backend:/zap/wrk:rw \
+            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+            -t https://21j0kdg4g2.execute-api.eu-west-1.amazonaws.com/staging/api-docs \
+            -f openapi \
+            -r zap-api-report.html \
+            -J zap-api-report.json \
+            -I
 
-        - name: Upload ZAP API Report
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: backend-security-report
-            path: security_report/backend/
+      - name: Upload ZAP API Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-security-report
+          path: security_report/backend/
 
     #  # ------------------------
     #  # 5. FRONTEND SECURITY (OWASP ZAP)
     #  # ------------------------
-    frontend-security:
-      name: 🔒 Frontend Security Scan
-      runs-on: ubuntu-latest
-      needs: ui-tests
-      if: always()
+  frontend-security:
+    name: 🔒 Frontend Security Scan
+    runs-on: ubuntu-latest
+    needs: [ui-selenide-tests, ui-cucumber-tests]
+    if: always()
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Prepare security report folder
-          run: |
-            mkdir -p security_report/frontend
-            chmod 777 security_report/frontend
-            sudo chown -R $(id -u):$(id -g) security_report/frontend
+      - name: Prepare security report folder
+        run: |
+          mkdir -p security_report/frontend
+          chmod 777 security_report/frontend
+          sudo chown -R $(id -u):$(id -g) security_report/frontend
 
-        - name: Run ZAP Baseline Scan against frontend
-          run: |
-            docker run --rm -v ${{ github.workspace }}/security_report/frontend:/zap/wrk:rw \
-              ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-              -t https://d3uvhar7i2kujw.cloudfront.net/ \
-              -r zap-frontend-report.html \
-              -J zap-frontend-report.json \
-              -I
+      - name: Run ZAP Baseline Scan against frontend
+        run: |
+          docker run --rm -v ${{ github.workspace }}/security_report/frontend:/zap/wrk:rw \
+            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+            -t https://d3uvhar7i2kujw.cloudfront.net/ \
+            -r zap-frontend-report.html \
+            -J zap-frontend-report.json \
+            -I
 
-        - name: Upload ZAP Frontend Report
-          if: always()
-          uses: actions/upload-artifact@v4
-          with:
-            name: frontend-security-report
-            path: security_report/frontend/
+      - name: Upload ZAP Frontend Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-security-report
+          path: security_report/frontend/
 
 
     #  # ------------------------
     # 7. DEPLOY REPORTS
     # ------------------------
-    deploy-reports:
-      name: 🚀 Deploy Reports to GitHub Pages
-      runs-on: ubuntu-latest
-      needs: [ui-tests, api-tests, frontend-performance, backend-security, frontend-security]
-      if: always()
+    # ------------------------
+    # 7. DEPLOY REPORTS
+    # ------------------------
+  deploy-reports:
+    name: 🚀 Deploy Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [ ui-selenide-tests, ui-cucumber-tests, api-tests, frontend-performance, backend-security, frontend-security ]
+    if: always()
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        # Create reports directory structure
-        - name: Create reports directory
-          run: |
-            mkdir -p reports/ui-allure-report
-            mkdir -p reports/ui-cucumber-report
-            mkdir -p reports/api-allure-report
-            mkdir -p reports/frontend-performance
-            mkdir -p reports/frontend-security
-            mkdir -p reports/backend-security
+      # Create reports directory structure
+      - name: Create reports directory
+        run: |
+          mkdir -p reports/ui-selenide-report
+          mkdir -p reports/ui-cucumber-allure-report
+          mkdir -p reports/ui-cucumber-report
+          mkdir -p reports/api-allure-report
+          mkdir -p reports/frontend-performance
+          mkdir -p reports/frontend-security
+          mkdir -p reports/backend-security
 
-#         ---------- UI ALLURE REPORT ----------
-        - name: Download UI Allure results
-          uses: actions/download-artifact@v4
-          with:
-            name: ui-allure-results
-            path: ui-allure-results
-          continue-on-error: true
+      # ---------- UI SELENIDE ALLURE REPORT ----------
+      - name: Download UI Selenide Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-selenide-allure-results
+          path: ui-selenide-allure-results
+        continue-on-error: true
 
-        - name: Install Allure CLI
-          run: |
-            wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
-            tar -xzf allure-2.27.0.tgz
-            sudo mv allure-2.27.0 /opt/allure
-            sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
+      - name: Install Allure CLI
+        run: |
+          wget https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz
+          tar -xzf allure-2.27.0.tgz
+          sudo mv allure-2.27.0 /opt/allure
+          sudo ln -s /opt/allure/bin/allure /usr/local/bin/allure
 
-        - name: Generate UI Allure report
-          run: |
-            if [ -d "ui-allure-results" ] && [ "$(ls -A ui-allure-results)" ]; then
-              allure generate ui-allure-results --clean -o reports/ui-allure-report
-            else
-              echo "No UI Allure results found"
-            fi
-          continue-on-error: true
+      - name: Generate UI Selenide Allure report
+        run: |
+          if [ -d "ui-selenide-allure-results" ] && [ "$(ls -A ui-selenide-allure-results)" ]; then
+            allure generate ui-selenide-allure-results --clean -o reports/ui-selenide-report
+          else
+            echo "No UI Selenide Allure results found"
+          fi
+        continue-on-error: true
 
-        # ---------- UI CUCUMBER REPORT ----------
-        - name: Download UI Cucumber JSON artifact
-          uses: actions/download-artifact@v4
-          with:
-            name: ui-cucumber-json
-            path: ui-cucumber-json
-          continue-on-error: true
+      # ---------- UI CUCUMBER ALLURE REPORT ----------
+      - name: Download UI Cucumber Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-cucumber-allure-results
+          path: ui-cucumber-allure-results
+        continue-on-error: true
 
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '20'
+      - name: Generate UI Cucumber Allure report
+        run: |
+          if [ -d "ui-cucumber-allure-results" ] && [ "$(ls -A ui-cucumber-allure-results)" ]; then
+            allure generate ui-cucumber-allure-results --clean -o reports/ui-cucumber-allure-report
+          else
+            echo "No UI Cucumber Allure results found"
+          fi
+        continue-on-error: true
 
-        - name: Install cucumber-html-reporter
-          run: |
-            npm init -y
-            npm install cucumber-html-reporter --save-dev
+      # ---------- UI CUCUMBER HTML REPORT ----------
+      - name: Download UI Cucumber JSON artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-cucumber-json
+          path: ui-cucumber-json
+        continue-on-error: true
 
-        - name: Generate UI Cucumber HTML report
-          run: |
-            if [ -f "ui-cucumber-json/cucumber.json" ]; then
-              node -e "
-              const reporter = require('cucumber-html-reporter');
-              const options = {
-                theme: 'bootstrap',
-                jsonFile: 'ui-cucumber-json/cucumber.json',
-                output: 'reports/ui-cucumber-report/index.html',
-                reportSuiteAsScenarios: true,
-                launchReport: false,
-                metadata: {
-                  'Test Type': 'UI Tests',
-                  'Application': 'Travel Itinerary Builder',
-                  'Browser': 'Chrome',
-                  'Platform': 'Ubuntu Latest',
-                  'Parallel': 'Scenarios',
-                  'Executed': 'GitHub Actions'
-                }
-              };
-              reporter.generate(options);
-              "
-            else
-              echo "No UI Cucumber JSON found"
-            fi
-          continue-on-error: true
-        #
-        # ---------- API ALLURE REPORT ----------
-        - name: Download API Allure results
-          uses: actions/download-artifact@v4
-          with:
-            name: api-allure-results
-            path: api-allure-results
-          continue-on-error: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-        - name: Generate API Allure report
-          run: |
-            if [ -d "api-allure-results" ] && [ "$(ls -A api-allure-results)" ]; then
-              allure generate api-allure-results --clean -o reports/api-allure-report
-            else
-              echo "No API Allure results found"
-            fi
-          continue-on-error: true
+      - name: Install cucumber-html-reporter
+        run: |
+          npm init -y
+          npm install cucumber-html-reporter --save-dev
 
+      - name: Generate UI Cucumber HTML report
+        run: |
+          if [ -f "ui-cucumber-json/cucumber.json" ]; then
+            node -e "
+            const reporter = require('cucumber-html-reporter');
+            const options = {
+              theme: 'bootstrap',
+              jsonFile: 'ui-cucumber-json/cucumber.json',
+              output: 'reports/ui-cucumber-report/index.html',
+              reportSuiteAsScenarios: true,
+              launchReport: false,
+              metadata: {
+                'Test Type': 'UI Cucumber Tests',
+                'Application': 'Travel Itinerary Builder',
+                'Browser': 'Chrome',
+                'Platform': 'Ubuntu Latest',
+                'Parallel': 'Scenarios',
+                'Executed': 'GitHub Actions'
+              }
+            };
+            reporter.generate(options);
+            "
+          else
+            echo "No UI Cucumber JSON found"
+          fi
+        continue-on-error: true
 
-        # ---------- FRONTEND PERFORMANCE REPORT ----------
-        - name: Download Frontend Performance report
-          uses: actions/download-artifact@v4
-          with:
-            name: frontend-performance
-            path: frontend-performance
-          continue-on-error: true
+      # ---------- API ALLURE REPORT ----------
+      - name: Download API Allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: api-allure-results
+          path: api-allure-results
+        continue-on-error: true
 
-        - name: Copy Frontend Performance report
-          run: |
-            if [ -d "frontend-performance" ]; then
-              cp -r frontend-performance/* reports/frontend-performance/
-            else
-              echo "No Frontend Performance report found"
-            fi
-          continue-on-error: true
+      - name: Generate API Allure report
+        run: |
+          if [ -d "api-allure-results" ] && [ "$(ls -A api-allure-results)" ]; then
+            allure generate api-allure-results --clean -o reports/api-allure-report
+          else
+            echo "No API Allure results found"
+          fi
+        continue-on-error: true
 
+      # ---------- FRONTEND PERFORMANCE REPORT ----------
+      - name: Download Frontend Performance report
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-performance
+          path: frontend-performance
+        continue-on-error: true
 
-        # ---------- FRONTEND SECURITY REPORT ----------
-        - name: Download Frontend ZAP report
-          uses: actions/download-artifact@v4
-          with:
-            name: frontend-security-report
-            path: frontend-security-report
-          continue-on-error: true
+      - name: Copy Frontend Performance report
+        run: |
+          if [ -d "frontend-performance" ]; then
+            cp -r frontend-performance/* reports/frontend-performance/
+          else
+            echo "No Frontend Performance report found"
+          fi
+        continue-on-error: true
 
-        - name: Copy Frontend ZAP report
-          run: |
-            if [ -d "frontend-security-report" ]; then
-              cp -r frontend-security-report/* reports/frontend-security/
-            else
-              echo "No Frontend security report found"
-            fi
-          continue-on-error: true
+      # ---------- FRONTEND SECURITY REPORT ----------
+      - name: Download Frontend ZAP report
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-security-report
+          path: frontend-security-report
+        continue-on-error: true
 
-        # ---------- BACKEND SECURITY REPORT ----------
-        - name: Download Backend ZAP report
-          uses: actions/download-artifact@v4
-          with:
-            name: backend-security-report
-            path: backend-security-report
-          continue-on-error: true
+      - name: Copy Frontend ZAP report
+        run: |
+          if [ -d "frontend-security-report" ]; then
+            cp -r frontend-security-report/* reports/frontend-security/
+          else
+            echo "No Frontend security report found"
+          fi
+        continue-on-error: true
 
-        - name: Copy Backend ZAP report
-          run: |
-            if [ -d "backend-security-report" ]; then
-              cp -r backend-security-report/* reports/backend-security/
-            else
-              echo "No Backend security report found"
-            fi
-          continue-on-error: true
+      # ---------- BACKEND SECURITY REPORT ----------
+      - name: Download Backend ZAP report
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-security-report
+          path: backend-security-report
+        continue-on-error: true
 
-        # ---------- CREATE INDEX PAGE ----------
-        - name: Create reports index page
-          run: |
-            cat > reports/index.html << 'EOF'
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Travel Itinerary Builder - QA Reports</title>
-              <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  min-height: 100vh;
-                  padding: 40px 20px;
-                }
-                .container {
-                  max-width: 1400px;
-                  margin: 0 auto;
-                }
-                h1 {
-                  color: white;
-                  text-align: center;
-                  margin-bottom: 20px;
-                  font-size: 2.8em;
-                  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-                }
-                .subtitle {
-                  color: rgba(255,255,255,0.9);
-                  text-align: center;
-                  margin-bottom: 50px;
-                  font-size: 1.2em;
-                }
-                .section-title {
-                  color: white;
-                  font-size: 1.8em;
-                  margin: 40px 0 20px 0;
-                  padding-left: 10px;
-                  border-left: 5px solid white;
-                }
-                .reports-grid {
-                  display: grid;
-                  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                  gap: 30px;
-                  margin-bottom: 40px;
-                }
-                .report-card {
-                  background: white;
-                  border-radius: 15px;
-                  padding: 30px;
-                  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                  transition: transform 0.3s ease, box-shadow 0.3s ease;
-                  text-decoration: none;
-                  color: inherit;
-                  display: block;
-                  position: relative;
-                  overflow: hidden;
-                }
-                .report-card::before {
-                  content: '';
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  right: 0;
-                  height: 5px;
-                  background: linear-gradient(90deg, #667eea, #764ba2);
-                }
-                .report-card:hover {
-                  transform: translateY(-5px);
-                  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-                }
-                .report-icon {
-                  font-size: 3.5em;
-                  margin-bottom: 15px;
-                  display: block;
-                }
-                .report-title {
-                  font-size: 1.5em;
-                  font-weight: bold;
-                  margin-bottom: 10px;
-                  color: #333;
-                }
-                .report-description {
-                  color: #666;
-                  line-height: 1.6;
-                  font-size: 0.95em;
-                }
-                .report-badge {
-                  display: inline-block;
-                  padding: 5px 12px;
-                  border-radius: 20px;
-                  font-size: 0.75em;
-                  font-weight: bold;
-                  margin-top: 15px;
-                  text-transform: uppercase;
-                }
-                .badge-ui { background: #e3f2fd; color: #1976d2; }
-                .badge-api { background: #f3e5f5; color: #7b1fa2; }
-                .badge-performance { background: #fff3e0; color: #e65100; }
-                .badge-security { background: #ffebee; color: #c62828; }
-                .footer {
-                  text-align: center;
-                  color: white;
-                  margin-top: 60px;
-                  font-size: 0.9em;
-                  padding: 20px;
-                  background: rgba(255,255,255,0.1);
-                  border-radius: 10px;
-                }
-                .footer-links {
-                  margin-top: 15px;
-                }
-                .footer-links a {
-                  color: white;
-                  text-decoration: none;
-                  margin: 0 15px;
-                  opacity: 0.8;
-                  transition: opacity 0.3s;
-                }
-                .footer-links a:hover {
-                  opacity: 1;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <h1>✈️ Travel Itinerary Builder</h1>
-                <div class="subtitle">Comprehensive QA Test Reports Dashboard</div>
-  
-                <!-- UI Testing Reports -->
-                <div class="section-title">🖥️ UI Testing</div>
-                <div class="reports-grid">
-                  <a href="ui-allure-report/index.html" class="report-card">
-                    <span class="report-icon">📊</span>
-                    <div class="report-title">UI Allure Report</div>
-                    <div class="report-description">
-                      Detailed UI test execution results with step-by-step breakdowns, screenshots, and historical trends
-                    </div>
-                    <span class="report-badge badge-ui">UI Tests</span>
-                  </a>
-  
-                  <a href="ui-cucumber-report/index.html" class="report-card">
-                    <span class="report-icon">🥒</span>
-                    <div class="report-title">UI Cucumber Report</div>
-                    <div class="report-description">
-                      BDD scenarios in Gherkin syntax showing feature test outcomes with business-readable format
-                    </div>
-                    <span class="report-badge badge-ui">UI Tests</span>
-                  </a>
-                </div>
-  
-                <!-- API Testing Reports -->
-                <div class="section-title">🔌 API Testing</div>
-                <div class="reports-grid">
-                  <a href="api-allure-report/index.html" class="report-card">
-                    <span class="report-icon">📡</span>
-                    <div class="report-title">API Allure Report</div>
-                    <div class="report-description">
-                      Comprehensive API test results including request/response details, assertions, and execution analytics
-                    </div>
-                    <span class="report-badge badge-api">API Tests</span>
-                  </a>
-                </div>
-  
-                <!-- Performance Testing Reports -->
-                <div class="section-title">⚡ Performance Testing</div>
-                <div class="reports-grid">
-                <a href="frontend-performance/index.html" class="report-card">
-                <span class="report-icon">🌐</span>
-                <div class="report-title">Frontend Performance Report</div>
-                <div class="report-description">
-                Lighthouse performance metrics including load times, accessibility scores, SEO ratings, and best practices
-                </div>
-                <span class="report-badge badge-performance">Performance</span>
+      - name: Copy Backend ZAP report
+        run: |
+          if [ -d "backend-security-report" ]; then
+            cp -r backend-security-report/* reports/backend-security/
+          else
+            echo "No Backend security report found"
+          fi
+        continue-on-error: true
+
+      # ---------- CREATE INDEX PAGE ----------
+      - name: Create reports index page
+        run: |
+          cat > reports/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Travel Itinerary Builder - QA Reports</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 40px 20px;
+              }
+              .container {
+                max-width: 1400px;
+                margin: 0 auto;
+              }
+              h1 {
+                color: white;
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 2.8em;
+                text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+              }
+              .subtitle {
+                color: rgba(255,255,255,0.9);
+                text-align: center;
+                margin-bottom: 50px;
+                font-size: 1.2em;
+              }
+              .section-title {
+                color: white;
+                font-size: 1.8em;
+                margin: 40px 0 20px 0;
+                padding-left: 10px;
+                border-left: 5px solid white;
+              }
+              .reports-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                margin-bottom: 40px;
+              }
+              .report-card {
+                background: white;
+                border-radius: 15px;
+                padding: 30px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+                position: relative;
+                overflow: hidden;
+              }
+              .report-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background: linear-gradient(90deg, #667eea, #764ba2);
+              }
+              .report-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+              }
+              .report-icon {
+                font-size: 3.5em;
+                margin-bottom: 15px;
+                display: block;
+              }
+              .report-title {
+                font-size: 1.5em;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #333;
+              }
+              .report-description {
+                color: #666;
+                line-height: 1.6;
+                font-size: 0.95em;
+              }
+              .report-badge {
+                display: inline-block;
+                padding: 5px 12px;
+                border-radius: 20px;
+                font-size: 0.75em;
+                font-weight: bold;
+                margin-top: 15px;
+                text-transform: uppercase;
+              }
+              .badge-ui { background: #e3f2fd; color: #1976d2; }
+              .badge-api { background: #f3e5f5; color: #7b1fa2; }
+              .badge-performance { background: #fff3e0; color: #e65100; }
+              .badge-security { background: #ffebee; color: #c62828; }
+              .footer {
+                text-align: center;
+                color: white;
+                margin-top: 60px;
+                font-size: 0.9em;
+                padding: 20px;
+                background: rgba(255,255,255,0.1);
+                border-radius: 10px;
+              }
+              .footer-links {
+                margin-top: 15px;
+              }
+              .footer-links a {
+                color: white;
+                text-decoration: none;
+                margin: 0 15px;
+                opacity: 0.8;
+                transition: opacity 0.3s;
+              }
+              .footer-links a:hover {
+                opacity: 1;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>✈️ Travel Itinerary Builder</h1>
+              <div class="subtitle">Comprehensive QA Test Reports Dashboard</div>
+
+              <!-- UI Testing Reports -->
+              <div class="section-title">🖥️ UI Testing</div>
+              <div class="reports-grid">
+                <a href="ui-selenide-report/index.html" class="report-card">
+                  <span class="report-icon">🎯</span>
+                  <div class="report-title">UI Selenide Report</div>
+                  <div class="report-description">
+                    Detailed Selenide/JUnit test execution results with step-by-step breakdowns, screenshots, and test analytics
+                  </div>
+                  <span class="report-badge badge-ui">UI Tests</span>
                 </a>
-                </div>
-  
-                <!-- Security Testing Reports -->
-                <div class="section-title">🔒 Security Testing</div>
-                <div class="reports-grid">
-                  <a href="frontend-security/zap-frontend-report.html" class="report-card">
-                    <span class="report-icon">🛡️</span>
-                    <div class="report-title">Frontend Security Report</div>
-                    <div class="report-description">
-                      OWASP ZAP scan results for the frontend application with vulnerability assessments and risk ratings
-                    </div>
-                    <span class="report-badge badge-security">Security</span>
-                  </a>
-  
-                  <a href="backend-security/zap-api-report.html" class="report-card">
-                    <span class="report-icon">🔐</span>
-                    <div class="report-title">Backend API Security Report</div>
-                    <div class="report-description">
-                      OWASP ZAP API security scan with detailed vulnerability analysis and remediation recommendations
-                    </div>
-                    <span class="report-badge badge-security">Security</span>
-                  </a>
-                </div>
-  
-                <div class="footer">
-                  <div>Generated by GitHub Actions CI/CD Pipeline</div>
-                  <div style="margin-top: 10px; opacity: 0.8;">
-                    Travel Itinerary Builder QA Automation • Build #${GITHUB_RUN_NUMBER}
+
+                <a href="ui-cucumber-allure-report/index.html" class="report-card">
+                  <span class="report-icon">🥒</span>
+                  <div class="report-title">UI Cucumber Allure Report</div>
+                  <div class="report-description">
+                    BDD test results in Allure format showing feature execution with detailed step breakdowns and trends
                   </div>
-                  <div class="footer-links">
-                    <a href="https://github.com/${GITHUB_REPOSITORY}" target="_blank">📦 Repository</a>
-                    <a href="https://github.com/${GITHUB_REPOSITORY}/actions" target="_blank">🔄 Actions</a>
+                  <span class="report-badge badge-ui">BDD Tests</span>
+                </a>
+
+                <a href="ui-cucumber-report/index.html" class="report-card">
+                  <span class="report-icon">📋</span>
+                  <div class="report-title">UI Cucumber HTML Report</div>
+                  <div class="report-description">
+                    BDD scenarios in Gherkin syntax showing feature test outcomes in business-readable format
                   </div>
+                  <span class="report-badge badge-ui">BDD Tests</span>
+                </a>
+              </div>
+
+              <!-- API Testing Reports -->
+              <div class="section-title">🔌 API Testing</div>
+              <div class="reports-grid">
+                <a href="api-allure-report/index.html" class="report-card">
+                  <span class="report-icon">📡</span>
+                  <div class="report-title">API Allure Report</div>
+                  <div class="report-description">
+                    Comprehensive API test results including request/response details, assertions, and execution analytics
+                  </div>
+                  <span class="report-badge badge-api">API Tests</span>
+                </a>
+              </div>
+
+              <!-- Performance Testing Reports -->
+              <div class="section-title">⚡ Performance Testing</div>
+              <div class="reports-grid">
+                <a href="frontend-performance/index.html" class="report-card">
+                  <span class="report-icon">🌐</span>
+                  <div class="report-title">Frontend Performance Report</div>
+                  <div class="report-description">
+                    Lighthouse performance metrics including load times, accessibility scores, SEO ratings, and best practices
+                  </div>
+                  <span class="report-badge badge-performance">Performance</span>
+                </a>
+              </div>
+
+              <!-- Security Testing Reports -->
+              <div class="section-title">🔒 Security Testing</div>
+              <div class="reports-grid">
+                <a href="frontend-security/zap-frontend-report.html" class="report-card">
+                  <span class="report-icon">🛡️</span>
+                  <div class="report-title">Frontend Security Report</div>
+                  <div class="report-description">
+                    OWASP ZAP scan results for the frontend application with vulnerability assessments and risk ratings
+                  </div>
+                  <span class="report-badge badge-security">Security</span>
+                </a>
+
+                <a href="backend-security/zap-api-report.html" class="report-card">
+                  <span class="report-icon">🔐</span>
+                  <div class="report-title">Backend API Security Report</div>
+                  <div class="report-description">
+                    OWASP ZAP API security scan with detailed vulnerability analysis and remediation recommendations
+                  </div>
+                  <span class="report-badge badge-security">Security</span>
+                </a>
+              </div>
+
+              <div class="footer">
+                <div>Generated by GitHub Actions CI/CD Pipeline</div>
+                <div style="margin-top: 10px; opacity: 0.8;">
+                  Travel Itinerary Builder QA Automation • Build #${GITHUB_RUN_NUMBER}
+                </div>
+                <div class="footer-links">
+                  <a href="https://github.com/${GITHUB_REPOSITORY}" target="_blank">📦 Repository</a>
+                  <a href="https://github.com/${GITHUB_REPOSITORY}/actions" target="_blank">🔄 Actions</a>
                 </div>
               </div>
-            </body>
-            </html>
-            EOF
+            </div>
+          </body>
+          </html>
+          EOF
 
-        - name: Deploy all reports
-          uses: peaceiris/actions-gh-pages@v4
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: reports
-            publish_branch: gh-pages
-            force_orphan: true
-          continue-on-error: true
+      - name: Deploy all reports
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports
+          publish_branch: gh-pages
+          force_orphan: true
+        continue-on-error: true
 
   #  # ------------------------
   #  # 9. SLACK NOTIFICATION
   #  # ------------------------
-    notify:
-      name: 🔔 Slack Notification
-      runs-on: ubuntu-latest
-      #    needs: [ui-tests, api-tests, backend-performance, frontend-performance, backend-security, frontend-security, deploy-reports]
-      needs: [ ui-tests, api-tests, backend-security, frontend-performance, frontend-security, deploy-reports ]
-      if: always()
+  notify:
+    name: 🔔 Slack Notification
+    runs-on: ubuntu-latest
+    needs: [ ui-selenide-tests, ui-cucumber-tests, api-tests, backend-security, frontend-performance, frontend-security, deploy-reports ]
+    if: always()
 
-      steps:
-        - name: Send Slack notification
-          run: |
-            # Default values
-            STATUS="success"
-            COLOR="good"
-            EMOJI="✅"
-            TITLE="*Travel Itinerary QA Pipeline Passed*"
-            
-            # Detect failures from upstream jobs
-            if [[ "${{ needs.ui-tests.result }}" == "failure" || \
-                  "${{ needs.api-tests.result }}" == "failure" || \
-                  "${{ needs.frontend-performance.result }}" == "failure" || \
-                  "${{ needs.backend-security.result }}" == "failure" || \
-                  "${{ needs.frontend-security.result }}" == "failure" ]]; then
-              STATUS="completed_with_failures"
-              COLOR="warning"
-              EMOJI="⚠️"
-              TITLE="*Travel Itinerary QA Pipeline Completed with Failures*"
-            fi
-            
-            # Detect cancelled or skipped jobs
-            if [[ "${{ needs.ui-tests.result }}" == "cancelled" || \
-                  "${{ needs.api-tests.result }}" == "cancelled" || \
-                  "${{ needs.frontend-performance.result }}" == "cancelled" || \
-                  "${{ needs.backend-security.result }}" == "cancelled" || \
-                  "${{ needs.frontend-security.result }}" == "cancelled" || \
-                  "${{ needs.ui-tests.result }}" == "skipped" || \
-                  "${{ needs.api-tests.result }}" == "skipped" || \
-                  "${{ needs.frontend-performance.result }}" == "skipped" || \
-                  "${{ needs.backend-security.result }}" == "skipped" || \
-                  "${{ needs.frontend-security.result }}" == "skipped" ]]; then
-              STATUS="failed"
-              COLOR="danger"
-              EMOJI="❌"
-              TITLE="*Travel Itinerary QA Pipeline Failed*"
-            fi
-            
-            # Repo info
-            REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
-            REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
-            
-            # Send Slack message with all possible report links (including commented-out ones)
-            curl -X POST -H 'Content-type: application/json' --data "{
-              \"attachments\": [
-                {
-                  \"color\": \"$COLOR\",
-                  \"blocks\": [
-                    {
-                      \"type\": \"section\",
-                      \"text\": {
-                        \"type\": \"mrkdwn\",
-                        \"text\": \"$EMOJI $TITLE\n*Status:* $STATUS\"
-                      }
-                    },
-                    {
-                      \"type\": \"section\",
-                      \"fields\": [
-                        {
-                          \"type\": \"mrkdwn\",
-                          \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-allure-report/index.html|UI Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend ZAP Security Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend ZAP Security Report>\"
-                        },
-                        {
-                          \"type\": \"mrkdwn\",
-                          \"text\": \"*Build:*\\n<$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|View Run #$GITHUB_RUN_NUMBER>\"
-                        }
-                      ]
+    steps:
+      - name: Send Slack notification
+        run: |
+          # Default values
+          STATUS="success"
+          COLOR="good"
+          EMOJI="✅"
+          TITLE="*Travel Itinerary QA Pipeline Passed*"
+          
+          # Detect failures from upstream jobs
+          if [[ "${{ needs.ui-selenide-tests.result }}" == "failure" || \
+                "${{ needs.ui-cucumber-tests.result }}" == "failure" || \
+                "${{ needs.api-tests.result }}" == "failure" || \
+                "${{ needs.frontend-performance.result }}" == "failure" || \
+                "${{ needs.backend-security.result }}" == "failure" || \
+                "${{ needs.frontend-security.result }}" == "failure" ]]; then
+            STATUS="completed_with_failures"
+            COLOR="warning"
+            EMOJI="⚠️"
+            TITLE="*Travel Itinerary QA Pipeline Completed with Failures*"
+          fi
+          
+          # Detect cancelled or skipped jobs
+          if [[ "${{ needs.ui-selenide-tests.result }}" == "cancelled" || \
+                "${{ needs.ui-cucumber-tests.result }}" == "cancelled" || \
+                "${{ needs.api-tests.result }}" == "cancelled" || \
+                "${{ needs.frontend-performance.result }}" == "cancelled" || \
+                "${{ needs.backend-security.result }}" == "cancelled" || \
+                "${{ needs.frontend-security.result }}" == "cancelled" || \
+                "${{ needs.ui-selenide-tests.result }}" == "skipped" || \
+                "${{ needs.ui-cucumber-tests.result }}" == "skipped" || \
+                "${{ needs.api-tests.result }}" == "skipped" || \
+                "${{ needs.frontend-performance.result }}" == "skipped" || \
+                "${{ needs.backend-security.result }}" == "skipped" || \
+                "${{ needs.frontend-security.result }}" == "skipped" ]]; then
+            STATUS="failed"
+            COLOR="danger"
+            EMOJI="❌"
+            TITLE="*Travel Itinerary QA Pipeline Failed*"
+          fi
+          
+          # Repo info
+          REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+          REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          
+          # Send Slack message with updated report links
+          curl -X POST -H 'Content-type: application/json' --data "{
+            \"attachments\": [
+              {
+                \"color\": \"$COLOR\",
+                \"blocks\": [
+                  {
+                    \"type\": \"section\",
+                    \"text\": {
+                      \"type\": \"mrkdwn\",
+                      \"text\": \"$EMOJI $TITLE\n*Status:* $STATUS\"
                     }
-                  ]
-                }
-              ]
-            }" ${{ secrets.SLACK_WEBHOOK_URL }}
+                  },
+                  {
+                    \"type\": \"section\",
+                    \"fields\": [
+                      {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"*Reports:*\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/|📊 All Reports Dashboard>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-selenide-report/index.html|UI Selenide Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-allure-report/index.html|UI Cucumber Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/ui-cucumber-report/index.html|UI Cucumber HTML Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/api-allure-report/index.html|API Allure Report>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-performance/index.html|Frontend Performance>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/frontend-security/zap-frontend-report.html|Frontend Security>\\n• <https://${REPO_OWNER}.github.io/${REPO_NAME}/backend-security/zap-api-report.html|Backend Security>\"
+                      },
+                      {
+                        \"type\": \"mrkdwn\",
+                        \"text\": \"*Build:*\\n<$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|View Run #$GITHUB_RUN_NUMBER>\"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }" ${{ secrets.SLACK_WEBHOOK_URL }}

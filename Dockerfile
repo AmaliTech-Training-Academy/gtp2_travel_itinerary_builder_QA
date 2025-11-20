@@ -3,6 +3,7 @@ FROM maven:3.9.6-eclipse-temurin-21
 WORKDIR /app
 
 RUN mkdir -p /app/target && chmod -R 777 /app/target
+RUN mkdir -p /app/allure-results && chmod -R 777 /app/allure-results
 
 # Install tools: wget + unzip for JMeter
 RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
@@ -21,6 +22,5 @@ COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
 COPY src ./src
-RUN mkdir -p allure-results
 
 CMD ["mvn", "clean", "test"]
