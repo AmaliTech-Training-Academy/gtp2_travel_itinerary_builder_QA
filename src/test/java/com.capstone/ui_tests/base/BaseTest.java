@@ -1,4 +1,4 @@
-package com.capstone.base;
+package com.capstone.ui_tests.base;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.WebDriverRunner;
