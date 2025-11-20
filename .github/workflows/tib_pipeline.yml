@@ -37,10 +37,6 @@ jobs:
             -Dselenide.remote=http://localhost:4444/wd/hub
         continue-on-error: true
 
-      - name: Stop Selenium Grid
-        if: always()
-        run: docker compose down
-
       - name: Upload Selenide Allure results
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,6 +44,11 @@ jobs:
           name: ui-selenide-allure-results
           path: target/allure-results/selenide
           if-no-files-found: warn
+
+
+      - name: Stop Selenium Grid
+        if: always()
+        run: docker compose down
 
   # ------------------------
   # 1B. UI TESTS - Cucumber BDD
