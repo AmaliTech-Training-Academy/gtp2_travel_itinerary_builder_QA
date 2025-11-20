@@ -19,6 +19,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare directories with correct permissions
+        run: |
+          mkdir -p target allure-results
+          chmod -R 777 target allure-results
+
       - name: Start Selenium and ZAP services
         run: docker compose up -d selenium zap
 
@@ -29,24 +34,18 @@ jobs:
       - name: Build Docker image for tests
         run: docker build -t travel_ui_tests .
 
-      - name: Prepare target folder
-        run: |
-          mkdir -p target
-          sudo chown -R $(id -u):$(id -g) target || true
-
       - name: Run Selenide UI tests
         run: |
           docker compose run --rm \
           -v ${{ github.workspace }}/allure-results:/app/allure-results \
           -v ${{ github.workspace }}/target:/app/target \
-          tests mvn clean test -P ui-selenide -Dselenide.remote=http://selenium:4444/wd/hub
+          tests mvn test -P ui-selenide -Dselenide.remote=http://selenium:4444/wd/hub
         continue-on-error: true
 
-      - name: Fix permissions for target and allure-results
+      - name: Fix permissions after test run
         if: always()
         run: |
-          sudo chmod -R 777 target || true
-          sudo chmod -R 777 allure-results || true
+          sudo chmod -R 777 target allure-results || true
 
       - name: Stop services
         if: always()
@@ -58,6 +57,7 @@ jobs:
         with:
           name: ui-selenide-allure-results
           path: allure-results
+          if-no-files-found: warn
 
   # ------------------------
   # 1B. UI TESTS - Cucumber BDD
@@ -71,6 +71,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare directories with correct permissions
+        run: |
+          mkdir -p target allure-results
+          chmod -R 777 target allure-results
+
       - name: Start Selenium and ZAP services
         run: docker compose up -d selenium zap
 
@@ -81,24 +86,18 @@ jobs:
       - name: Build Docker image for tests
         run: docker build -t travel_ui_tests .
 
-      - name: Prepare target folder
-        run: |
-          mkdir -p target
-          sudo chown -R $(id -u):$(id -g) target || true
-
       - name: Run Cucumber BDD tests
         run: |
           docker compose run --rm \
           -v ${{ github.workspace }}/allure-results:/app/allure-results \
           -v ${{ github.workspace }}/target:/app/target \
-          tests mvn clean test -P ui-cucumber -Dselenide.remote=http://selenium:4444/wd/hub
+          tests mvn test -P ui-cucumber -Dselenide.remote=http://selenium:4444/wd/hub
         continue-on-error: true
 
-      - name: Fix permissions for target and allure-results
+      - name: Fix permissions after test run
         if: always()
         run: |
-          sudo chmod -R 777 target || true
-          sudo chmod -R 777 allure-results || true
+          sudo chmod -R 777 target allure-results || true
 
       - name: Stop services
         if: always()
@@ -110,6 +109,7 @@ jobs:
         with:
           name: ui-cucumber-allure-results
           path: allure-results
+          if-no-files-found: warn
 
       - name: Upload Cucumber JSON results
         if: always()
@@ -117,7 +117,7 @@ jobs:
         with:
           name: ui-cucumber-json
           path: target/cucumber.json
-
+          if-no-files-found: warn
 
   # ------------------------
   # 2. API TESTS (Rest Assured)
@@ -152,10 +152,9 @@ jobs:
           path: allure-results
           if-no-files-found: warn
 
-
-  #  # ------------------------
-  #  # 3. FRONTEND PERFORMANCE (Optional Lighthouse)
-  #  # ------------------------
+  # ------------------------
+  # 3. FRONTEND PERFORMANCE (Optional Lighthouse)
+  # ------------------------
   frontend-performance:
     name: 🌐 Frontend Performance (Lighthouse)
     runs-on: ubuntu-latest
@@ -183,9 +182,9 @@ jobs:
           name: frontend-performance
           path: performance/frontend
 
-  #  # ------------------------
-  #  # 4. BACKEND SECURITY (OWASP ZAP)
-  #  # ------------------------
+  # ------------------------
+  # 4. BACKEND SECURITY (OWASP ZAP)
+  # ------------------------
   backend-security:
     name: 🔒 Backend Security Scan
     runs-on: ubuntu-latest
@@ -200,7 +199,6 @@ jobs:
         run: |
           mkdir -p security_report/backend
           chmod 777 security_report/backend
-          sudo chown -R $(id -u):$(id -g) security_report/backend
 
       - name: Run ZAP Baseline Scan against API
         run: |
@@ -219,9 +217,9 @@ jobs:
           name: backend-security-report
           path: security_report/backend/
 
-    #  # ------------------------
-    #  # 5. FRONTEND SECURITY (OWASP ZAP)
-    #  # ------------------------
+  # ------------------------
+  # 5. FRONTEND SECURITY (OWASP ZAP)
+  # ------------------------
   frontend-security:
     name: 🔒 Frontend Security Scan
     runs-on: ubuntu-latest
@@ -236,7 +234,6 @@ jobs:
         run: |
           mkdir -p security_report/frontend
           chmod 777 security_report/frontend
-          sudo chown -R $(id -u):$(id -g) security_report/frontend
 
       - name: Run ZAP Baseline Scan against frontend
         run: |
@@ -254,13 +251,9 @@ jobs:
           name: frontend-security-report
           path: security_report/frontend/
 
-
-    #  # ------------------------
-    # 7. DEPLOY REPORTS
-    # ------------------------
-    # ------------------------
-    # 7. DEPLOY REPORTS
-    # ------------------------
+  # ------------------------
+  # 7. DEPLOY REPORTS
+  # ------------------------
   deploy-reports:
     name: 🚀 Deploy Reports to GitHub Pages
     runs-on: ubuntu-latest
@@ -670,9 +663,9 @@ jobs:
           force_orphan: true
         continue-on-error: true
 
-  #  # ------------------------
-  #  # 9. SLACK NOTIFICATION
-  #  # ------------------------
+  # ------------------------
+  # 9. SLACK NOTIFICATION
+  # ------------------------
   notify:
     name: 🔔 Slack Notification
     runs-on: ubuntu-latest

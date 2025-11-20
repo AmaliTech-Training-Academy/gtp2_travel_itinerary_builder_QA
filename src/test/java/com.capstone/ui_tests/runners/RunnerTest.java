@@ -14,5 +14,8 @@ import io.cucumber.junit.platform.engine.Constants;
         key = Constants.GLUE_PROPERTY_NAME,
         value = "com.capstone.ui_tests.stepdefinitions, com.capstone.ui_tests.hooks"
 )
-//@Tag("ui")
+@ConfigurationParameter(
+        key = Constants.FILTER_TAGS_PROPERTY_NAME,
+        value = "not @ignore"
+)
 public class RunnerTest {}
