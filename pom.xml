@@ -138,6 +138,9 @@
                 <directory>src/test/resources</directory>
                 <includes>
                     <include>**/*.feature</include>
+                    <include>**/*.json</include>
+                    <include>**/*.properties</include>
+                    <include>**/*</include>
                 </includes>
             </testResource>
         </testResources>
@@ -171,7 +174,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <projectName>SwagLabs Automation</projectName>
+                            <projectName>Travel Itinerary Automation</projectName>
                             <outputDirectory>${project.build.directory}</outputDirectory>
                             <jsonFiles>
                                 <param>${project.build.directory}/cucumber.json</param>
@@ -196,10 +199,11 @@
                         <version>3.0.0-M7</version>
                         <configuration>
                             <includes>
-                                <include>**/*Test.java</include>
+                                <include>**ui_tests/tests/*Test.java</include>
                             </includes>
                             <excludes>
                                 <exclude>**/runners/**</exclude>
+                                <exclude>**/api_tests/**</exclude>
                             </excludes>
                             <systemPropertyVariables>
                                 <allure.results.directory>allure-results/selenide</allure.results.directory>
@@ -222,8 +226,11 @@
                         <version>3.0.0-M7</version>
                         <configuration>
                             <includes>
-                                <include>**/runners/RunnerTest.java</include>
+                                <include>**/ui_tests/runners/RunnerTest.java</include>
                             </includes>
+                            <excludes>
+                                <exclude>**/api_tests/**</exclude>
+                            </excludes>
                             <systemPropertyVariables>
                                 <allure.results.directory>allure-results/cucumber</allure.results.directory>
                                 <cucumber.plugin>json:target/cucumber.json</cucumber.plugin>
@@ -245,9 +252,15 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.0.0-M7</version>
                         <configuration>
-                            <groups>api</groups>
+                            <includes>
+                                <include>**/api_tests/**/*Test.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/ui_tests/**</exclude>
+                                <exclude>**/runners/**</exclude>
+                            </excludes>
                             <systemPropertyVariables>
-                                <allure.results.directory>allure-results</allure.results.directory>
+                                <allure.results.directory>allure-results/api</allure.results.directory>
                             </systemPropertyVariables>
                             <testFailureIgnore>true</testFailureIgnore>
                         </configuration>

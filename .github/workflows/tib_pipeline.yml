@@ -7,19 +7,49 @@ on:
     branches: [ main ]
 
 jobs:
+  build-ui-image:
+    name: 🏗️ Build UI Docker Image
+    runs-on: ubuntu-latest
+    outputs:
+      image-artifact: travel_ui_tests.tar
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build UI Docker image
+        run: docker build -t travel_ui_tests .
+
+      - name: Save Docker image as artifact
+        run: |
+          docker save travel_ui_tests -o travel_ui_tests.tar
+        # Upload the tar so other jobs can load it
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-docker-image
+          path: travel_ui_tests.tar
+
   # ------------------------
   # 1A. UI TESTS - Selenide/JUnit
   # ------------------------
   ui-selenide-tests:
     name: 🧪 UI Tests (Selenide)
     runs-on: ubuntu-latest
-    continue-on-error: false
-
+    needs: build-ui-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare directories with correct permissions
+      - name: Download prebuilt Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-docker-image
+          path: .
+
+      - name: Load Docker image
+        run: docker load -i travel_ui_tests.tar
+
+      - name: Prepare directories
         run: |
           mkdir -p target allure-results
           chmod -R 777 target allure-results
@@ -27,19 +57,16 @@ jobs:
       - name: Start Selenium and ZAP services
         run: docker compose up -d selenium zap
 
-      - name: Wait for Selenium to be ready
+      - name: Wait for Selenium
         run: |
-          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done' || echo "Selenium might not be fully ready"
-
-      - name: Build Docker image for tests
-        run: docker build -t travel_ui_tests .
+          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done'
 
       - name: Run Selenide UI tests
         run: |
           docker compose run --rm \
-          -v ${{ github.workspace }}/allure-results:/app/allure-results \
-          -v ${{ github.workspace }}/target:/app/target \
-          tests mvn test -P ui-selenide -Dselenide.remote=http://selenium:4444/wd/hub
+            -v ${{ github.workspace }}/allure-results:/app/allure-results \
+            -v ${{ github.workspace }}/target:/app/target \
+            tests mvn test -P ui-selenide -Dselenide.remote=http://selenium:4444/wd/hub
         continue-on-error: true
 
       - name: Fix permissions after test run
@@ -65,13 +92,21 @@ jobs:
   ui-cucumber-tests:
     name: 🥒 UI Tests (Cucumber)
     runs-on: ubuntu-latest
-    continue-on-error: false
-
+    needs: build-ui-image
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Prepare directories with correct permissions
+      - name: Download prebuilt Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: ui-docker-image
+          path: .
+
+      - name: Load Docker image
+        run: docker load -i travel_ui_tests.tar
+
+      - name: Prepare directories
         run: |
           mkdir -p target allure-results
           chmod -R 777 target allure-results
@@ -79,25 +114,21 @@ jobs:
       - name: Start Selenium and ZAP services
         run: docker compose up -d selenium zap
 
-      - name: Wait for Selenium to be ready
+      - name: Wait for Selenium
         run: |
-          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done' || echo "Selenium might not be fully ready"
-
-      - name: Build Docker image for tests
-        run: docker build -t travel_ui_tests .
+          timeout 60 bash -c 'until curl -s http://localhost:4444/status | grep -q "ready"; do sleep 2; done'
 
       - name: Run Cucumber BDD tests
         run: |
           docker compose run --rm \
-          -v ${{ github.workspace }}/allure-results:/app/allure-results \
-          -v ${{ github.workspace }}/target:/app/target \
-          tests mvn test -P ui-cucumber -Dselenide.remote=http://selenium:4444/wd/hub
+            -v ${{ github.workspace }}/allure-results:/app/allure-results \
+            -v ${{ github.workspace }}/target:/app/target \
+            tests mvn test -P ui-cucumber -Dselenide.remote=http://selenium:4444/wd/hub
         continue-on-error: true
 
       - name: Fix permissions after test run
         if: always()
-        run: |
-          sudo chmod -R 777 target allure-results || true
+        run: sudo chmod -R 777 target allure-results || true
 
       - name: Stop services
         if: always()
@@ -118,6 +149,7 @@ jobs:
           name: ui-cucumber-json
           path: target/cucumber.json
           if-no-files-found: warn
+
 
   # ------------------------
   # 2. API TESTS (Rest Assured)
