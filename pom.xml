@@ -211,7 +211,7 @@
                                 <exclude>**/api_tests/**</exclude>
                             </excludes>
                             <systemPropertyVariables>
-                                <allure.results.directory>allure-results/selenide</allure.results.directory>
+                                <allure.results.directory>${project.build.directory}/allure-results/selenide</allure.results.directory>
                             </systemPropertyVariables>
                             <testFailureIgnore>true</testFailureIgnore>
                         </configuration>
