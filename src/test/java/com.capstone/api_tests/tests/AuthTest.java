@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Authentication APIs")
-public class AuthTestAPI extends APIBaseTest {
+public class AuthTest extends APIBaseTest {
 
     AuthEndpoints auth = new AuthEndpoints();
 

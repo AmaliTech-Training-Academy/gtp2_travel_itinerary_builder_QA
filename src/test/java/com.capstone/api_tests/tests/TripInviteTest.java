@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Invite API")
-public class TripInviteTestAPI extends APIBaseTest {
+public class TripInviteTest extends APIBaseTest {
 
     TripEndpoints trip = new TripEndpoints();
     String ownerToken = TokenManager.getToken();

@@ -151,6 +151,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration>
+                    <includes>
+                        <include>**/ui_tests/tests/*Test.java</include>
+                        <include>**/ui_tests/runners/RunnerTest.java</include>
+                        <include>**/api_tests/tests/*Test.java</include>
+                    </includes>
                     <testFailureIgnore>true</testFailureIgnore>
                 </configuration>
             </plugin>
@@ -199,7 +204,7 @@
                         <version>3.0.0-M7</version>
                         <configuration>
                             <includes>
-                                <include>**ui_tests/tests/*Test.java</include>
+                                <include>**/ui_tests/tests/*Test.java</include>
                             </includes>
                             <excludes>
                                 <exclude>**/runners/**</exclude>
@@ -232,8 +237,8 @@
                                 <exclude>**/api_tests/**</exclude>
                             </excludes>
                             <systemPropertyVariables>
-                                <allure.results.directory>allure-results/cucumber</allure.results.directory>
-                                <cucumber.plugin>json:target/cucumber.json</cucumber.plugin>
+                                <allure.results.directory>${project.build.directory}/allure-results/cucumber</allure.results.directory>
+                                <cucumber.plugin>json:target/cucumber-ui.json</cucumber.plugin>
                             </systemPropertyVariables>
                             <testFailureIgnore>true</testFailureIgnore>
                         </configuration>
@@ -253,14 +258,14 @@
                         <version>3.0.0-M7</version>
                         <configuration>
                             <includes>
-                                <include>**/api_tests/**/*Test.java</include>
+                                <include>**/api_tests/tests/*Test.java</include>
                             </includes>
                             <excludes>
                                 <exclude>**/ui_tests/**</exclude>
                                 <exclude>**/runners/**</exclude>
                             </excludes>
                             <systemPropertyVariables>
-                                <allure.results.directory>allure-results/api</allure.results.directory>
+                                <allure.results.directory>${project.build.directory}/allure-results/api</allure.results.directory>
                             </systemPropertyVariables>
                             <testFailureIgnore>true</testFailureIgnore>
                         </configuration>

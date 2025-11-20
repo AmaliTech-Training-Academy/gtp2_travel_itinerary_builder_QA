@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.*;
 
 @Epic("Travel Itinerary Builder")
 @Feature("Trip Management APIs")
-public class TripTestAPI extends APIBaseTest {
+public class TripTest extends APIBaseTest {
 
     TripEndpoints trip = new TripEndpoints();
     String tripId;
