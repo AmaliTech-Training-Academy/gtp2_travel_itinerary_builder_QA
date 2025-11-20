@@ -1,0 +1,6 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Thu Nov 20 16:25:00 UTC 2025","Thu Nov 20 16:25:02 UTC 2025","2891","","Login functionality","","Invalid login scenarios","","Invalid login scenarios",""
+"passed","Thu Nov 20 16:25:02 UTC 2025","Thu Nov 20 16:25:05 UTC 2025","2316","","Login functionality","","Invalid login scenarios","","Invalid login scenarios",""
+"passed","Thu Nov 20 16:24:54 UTC 2025","Thu Nov 20 16:24:57 UTC 2025","3208","","Login functionality","","Invalid login scenarios","","Invalid login scenarios",""
+"passed","Thu Nov 20 16:24:57 UTC 2025","Thu Nov 20 16:25:00 UTC 2025","2747","","Login functionality","","Invalid login scenarios","","Invalid login scenarios",""
+"passed","Thu Nov 20 16:24:48 UTC 2025","Thu Nov 20 16:24:54 UTC 2025","5669","","Login functionality","","Valid login","","Valid login",""
