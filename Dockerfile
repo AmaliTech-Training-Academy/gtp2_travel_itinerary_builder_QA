@@ -2,6 +2,8 @@ FROM maven:3.9.6-eclipse-temurin-21
 
 WORKDIR /app
 
+RUN mkdir -p /app/target && chmod -R 777 /app/target
+
 # Install tools: wget + unzip for JMeter
 RUN apt-get update && apt-get install -y wget unzip && rm -rf /var/lib/apt/lists/*
 

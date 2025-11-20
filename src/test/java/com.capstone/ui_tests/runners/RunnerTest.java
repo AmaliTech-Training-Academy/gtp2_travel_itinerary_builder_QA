@@ -1,9 +1,6 @@
 package com.capstone.ui_tests.runners;
 
-import org.junit.platform.suite.api.ConfigurationParameter;
-import org.junit.platform.suite.api.IncludeEngines;
-import org.junit.platform.suite.api.SelectClasspathResource;
-import org.junit.platform.suite.api.Suite;
+import org.junit.platform.suite.api.*;
 import io.cucumber.junit.platform.engine.Constants;
 
 @Suite
@@ -17,4 +14,5 @@ import io.cucumber.junit.platform.engine.Constants;
         key = Constants.GLUE_PROPERTY_NAME,
         value = "com.capstone.ui_tests.stepdefinitions, com.capstone.ui_tests.hooks"
 )
+//@Tag("ui")
 public class RunnerTest {}

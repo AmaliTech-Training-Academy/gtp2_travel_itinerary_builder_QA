@@ -13,7 +13,7 @@ jobs:
     ui-tests:
       name: 🧪 UI Tests
       runs-on: ubuntu-latest
-      continue-on-error: true
+      continue-on-error: false
 
       steps:
         - name: Checkout repository
@@ -42,6 +42,13 @@ jobs:
             tests mvn clean test -Dgroups=ui -Dselenide.remote=http://selenium:4444/wd/hub
           continue-on-error: true
 
+        - name: Fix permissions for target and allure-results
+          if: always()
+          run: |
+            sudo chmod -R 777 target || true
+            sudo chmod -R 777 allure-results || true
+
+
         - name: Stop services
           if: always()
           run: docker compose down
@@ -66,7 +73,7 @@ jobs:
     api-tests:
       name: 🛠️ API Tests
       runs-on: ubuntu-latest
-      continue-on-error: true
+      continue-on-error: false
 
       steps:
         - name: Checkout repository
