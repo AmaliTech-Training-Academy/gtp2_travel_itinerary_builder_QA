@@ -1,7 +1,7 @@
 package com.capstone.ui_tests.tests;
 
 import org.junit.jupiter.api.Test;
-import com.capstone.base.BaseTest;
+import com.capstone.ui_tests.base.BaseTest;
 import com.capstone.pages.LoginPage;
 import com.capstone.ui_tests.util.TestDataLoader;
 import com.capstone.ui_tests.util.User;
