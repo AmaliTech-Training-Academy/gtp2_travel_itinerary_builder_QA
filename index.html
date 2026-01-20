@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Itinerary Builder - QA Reports</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 2.8em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .subtitle {
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      margin-bottom: 50px;
+      font-size: 1.2em;
+    }
+    .section-title {
+      color: white;
+      font-size: 1.8em;
+      margin: 40px 0 20px 0;
+      padding-left: 10px;
+      border-left: 5px solid white;
+    }
+    .reports-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+    .report-card {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    .report-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    }
+    .report-icon {
+      font-size: 3.5em;
+      margin-bottom: 15px;
+      display: block;
+    }
+    .report-title {
+      font-size: 1.5em;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .report-description {
+      color: #666;
+      line-height: 1.6;
+      font-size: 0.95em;
+    }
+    .report-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75em;
+      font-weight: bold;
+      margin-top: 15px;
+      text-transform: uppercase;
+    }
+    .badge-ui { background: #e3f2fd; color: #1976d2; }
+    .badge-api { background: #f3e5f5; color: #7b1fa2; }
+    .badge-performance { background: #fff3e0; color: #e65100; }
+    .badge-security { background: #ffebee; color: #c62828; }
+    .footer {
+      text-align: center;
+      color: white;
+      margin-top: 60px;
+      font-size: 0.9em;
+      padding: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .footer-links {
+      margin-top: 15px;
+    }
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      margin: 0 15px;
+      opacity: 0.8;
+      transition: opacity 0.3s;
+    }
+    .footer-links a:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>✈️ Travel Itinerary Builder</h1>
+    <div class="subtitle">Comprehensive QA Test Reports Dashboard</div>
+
+    <!-- UI Testing Reports -->
+    <div class="section-title">🖥️ UI Testing</div>
+    <div class="reports-grid">
+      <a href="./ui-selenide-report/index.html" class="report-card">
+        <span class="report-icon">🎯</span>
+        <div class="report-title">UI Selenide Report</div>
+        <div class="report-description">
+          Detailed Selenide/JUnit test execution results with step-by-step breakdowns, screenshots, and test analytics
+        </div>
+        <span class="report-badge badge-ui">UI Tests</span>
+      </a>
+
+      <a href="./ui-cucumber-allure-report/index.html" class="report-card">
+        <span class="report-icon">🥒</span>
+        <div class="report-title">UI Cucumber Allure Report</div>
+        <div class="report-description">
+          BDD test results in Allure format showing feature execution with detailed step breakdowns and trends
+        </div>
+        <span class="report-badge badge-ui">BDD Tests</span>
+      </a>
+
+      <a href="./ui-cucumber-report/index.html" class="report-card">
+        <span class="report-icon">📋</span>
+        <div class="report-title">UI Cucumber HTML Report</div>
+        <div class="report-description">
+          BDD scenarios in Gherkin syntax showing feature test outcomes in business-readable format
+        </div>
+        <span class="report-badge badge-ui">BDD Tests</span>
+      </a>
+    </div>
+
+    <!-- API Testing Reports -->
+    <div class="section-title">🔌 API Testing</div>
+    <div class="reports-grid">
+      <a href="api-allure-report/index.html" class="report-card">
+        <span class="report-icon">📡</span>
+        <div class="report-title">API Allure Report</div>
+        <div class="report-description">
+          Comprehensive API test results including request/response details, assertions, and execution analytics
+        </div>
+        <span class="report-badge badge-api">API Tests</span>
+      </a>
+    </div>
+
+    <!-- Performance Testing Reports -->
+    <div class="section-title">⚡ Performance Testing</div>
+    <div class="reports-grid">
+      <a href="frontend-performance/index.html" class="report-card">
+        <span class="report-icon">🌐</span>
+        <div class="report-title">Frontend Performance Report</div>
+        <div class="report-description">
+          Lighthouse performance metrics including load times, accessibility scores, SEO ratings, and best practices
+        </div>
+        <span class="report-badge badge-performance">Performance</span>
+      </a>
+    </div>
+
+    <!-- Security Testing Reports -->
+    <div class="section-title">🔒 Security Testing</div>
+    <div class="reports-grid">
+      <a href="frontend-security/zap-frontend-report.html" class="report-card">
+        <span class="report-icon">🛡️</span>
+        <div class="report-title">Frontend Security Report</div>
+        <div class="report-description">
+          OWASP ZAP scan results for the frontend application with vulnerability assessments and risk ratings
+        </div>
+        <span class="report-badge badge-security">Security</span>
+      </a>
+
+      <a href="backend-security/zap-api-report.html" class="report-card">
+        <span class="report-icon">🔐</span>
+        <div class="report-title">Backend API Security Report</div>
+        <div class="report-description">
+          OWASP ZAP API security scan with detailed vulnerability analysis and remediation recommendations
+        </div>
+        <span class="report-badge badge-security">Security</span>
+      </a>
+    </div>
+
+    <div class="footer">
+      <div>Generated by GitHub Actions CI/CD Pipeline</div>
+      <div style="margin-top: 10px; opacity: 0.8;">
+        Travel Itinerary Builder QA Automation • Build #${GITHUB_RUN_NUMBER}
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/${GITHUB_REPOSITORY}" target="_blank">📦 Repository</a>
+        <a href="https://github.com/${GITHUB_REPOSITORY}/actions" target="_blank">🔄 Actions</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
