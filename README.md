@@ -127,7 +127,9 @@ Use this repository as a reference for manual and API QA workflows
 👤 Author
 
 Collins Kwasi Adu
+
 Quality Assurance Engineer
+
 📧 Email: aducollins49@gmail.com
 
 🔗 GitHub: https://github.com/NanaQuaci
