@@ -133,4 +133,5 @@ Quality Assurance Engineer
 🔗 GitHub: https://github.com/NanaQuaci
 
 🔗 LinkedIn: https://www.linkedin.com/in/collins-adu-20a5a8217/
+
 🔗 Find Test Reports: https://amalitech-training-academy.github.io/gtp2_travel_itinerary_builder_QA/
